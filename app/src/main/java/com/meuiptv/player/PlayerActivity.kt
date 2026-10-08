@@ -129,7 +129,23 @@ class PlayerActivity : AppCompatActivity() {
         p.prepare()
         player = p
         retries = 0
+        updateControls()
         showInfo()
+    }
+
+    /**
+     * Canal ao vivo: só ⏮ ⏸ ⏭ (sem voltar/avançar 10s e sem a barra de tempo).
+     * Filmes e séries: controles completos.
+     */
+    private fun updateControls() {
+        val live = currentItem?.kind == Kind.LIVE
+        playerView.setShowRewindButton(!live)
+        playerView.setShowFastForwardButton(!live)
+        val visibility = if (live) View.GONE else View.VISIBLE
+        for (name in listOf("exo_progress", "exo_time", "exo_position", "exo_duration")) {
+            val id = resources.getIdentifier(name, "id", packageName)
+            if (id != 0) playerView.findViewById<View>(id)?.visibility = visibility
+        }
     }
 
     private fun releasePlayer() {
@@ -154,6 +170,7 @@ class PlayerActivity : AppCompatActivity() {
     private val listener = object : Player.Listener {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             retries = 0
+            updateControls()
             showInfo()
         }
 

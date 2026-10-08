@@ -56,8 +56,8 @@ Sem celular à mão? Use o emulador: **Tools → Device Manager → Create Devic
 |---|---|
 | Nome do app | `app/src/main/res/values/strings.xml` |
 | Cores | `app/src/main/res/values/colors.xml` (`accent` é a cor de destaque) |
-| Ícone | Clique com o botão direito em `res` → **New → Image Asset** e depois troque `@drawable/ic_launcher` no `AndroidManifest.xml` por `@mipmap/ic_launcher` |
-| Banner da Android TV | `app/src/main/res/drawable/banner.xml` (ou coloque um `banner.png` de 320×180 na pasta `drawable`) |
+| Ícone | Arquivos `ic_launcher.png` nas pastas `app/src/main/res/mipmap-*` (ou no Android Studio: botão direito em `res` → **New → Image Asset**) |
+| Banner da Android TV | `app/src/main/res/drawable-xhdpi/banner.png` (640×360) |
 | Identificador do app | `applicationId` em `app/build.gradle.kts` (ex: `com.seunome.iptv`) |
 | Canais ao vivo em HLS em vez de TS | Em `XtreamApi.kt`, função `liveUrl`, troque `.ts` por `.m3u8` |
 

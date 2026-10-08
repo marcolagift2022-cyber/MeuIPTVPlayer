@@ -3,4 +3,6 @@
     <dimen name="side_padding">20dp</dimen>
     <dimen name="form_side_padding">24dp</dimen>
     <dimen name="menu_button_height">110dp</dimen>
+    <!-- Largura da coluna de categorias (TV / celular deitado) -->
+    <dimen name="category_column_width">260dp</dimen>
 </resources>

@@ -62,11 +62,13 @@
             <Button
                 android:id="@+id/btn_live"
                 style="@style/MenuButton"
+                android:drawableTop="@drawable/ic_menu_live"
                 android:text="TV ao vivo" />
 
             <Button
                 android:id="@+id/btn_movies"
                 style="@style/MenuButton"
+                android:drawableTop="@drawable/ic_menu_movies"
                 android:text="Filmes" />
         </LinearLayout>
 
@@ -78,12 +80,14 @@
             <Button
                 android:id="@+id/btn_series"
                 style="@style/MenuButton"
+                android:drawableTop="@drawable/ic_menu_series"
                 android:text="Séries" />
 
             <Button
                 android:id="@+id/btn_favorites"
                 style="@style/MenuButton"
-                android:text="★ Favoritos" />
+                android:drawableTop="@drawable/ic_menu_favorites"
+                android:text="Favoritos" />
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

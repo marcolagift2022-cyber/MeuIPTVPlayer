@@ -69,7 +69,9 @@ class ListActivity : AppCompatActivity() {
             onClick = { item, position -> open(item, position) },
             onToggleFavorite = { item -> toggleFavorite(item) },
         )
-        val gridWidthDp = resources.configuration.screenWidthDp * (if (landscape) 0.72f else 1f)
+        val density = resources.displayMetrics.density
+        val categoryColumnDp = resources.getDimension(R.dimen.category_column_width) / density
+        val gridWidthDp = resources.configuration.screenWidthDp - (if (landscape) categoryColumnDp + 60f else 24f)
         val cardWidthDp = if (kind == Kind.LIVE) 130 else 120
         findViewById<RecyclerView>(R.id.items).apply {
             layoutManager = GridLayoutManager(context, max(2, (gridWidthDp / cardWidthDp).toInt()))
