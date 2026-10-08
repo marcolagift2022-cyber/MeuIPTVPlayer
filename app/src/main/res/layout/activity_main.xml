@@ -47,6 +47,20 @@
             android:textColor="@color/text" />
     </LinearLayout>
 
+    <!-- Aviso enviado pelo config.json ("aviso") -->
+    <TextView
+        android:id="@+id/notice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/bg_notice"
+        android:padding="12dp"
+        android:textColor="@color/text"
+        android:textSize="15sp"
+        android:visibility="gone" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"

@@ -27,7 +27,8 @@ class XtreamApi(private val account: Account) {
         val o = try {
             JSONObject(call())
         } catch (e: JSONException) {
-            return "O servidor não respondeu como um painel Xtream. Confira o endereço."
+            // Ex.: DNS bloqueado devolvendo uma página qualquer. Tratado como falha de conexão.
+            throw java.io.IOException("O servidor não respondeu como um painel Xtream.")
         }
         val info = o.optJSONObject("user_info") ?: return "Usuário ou senha incorretos."
         if (info.optInt("auth", 0) != 1) return "Usuário ou senha incorretos."

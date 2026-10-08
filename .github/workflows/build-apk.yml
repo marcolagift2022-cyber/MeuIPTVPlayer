@@ -2,6 +2,10 @@ name: Gerar APK
 
 on:
   push:
+    # Editar o config.json (DNS/aviso) ou textos NÃO gera um APK novo
+    paths-ignore:
+      - "config.json"
+      - "**.md"
   workflow_dispatch:
 
 permissions:

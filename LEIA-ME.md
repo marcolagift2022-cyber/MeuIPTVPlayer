@@ -50,6 +50,29 @@ Sem celular à mão? Use o emulador: **Tools → Device Manager → Create Devic
 
 ---
 
+## Trocar o DNS (servidor) de todos os clientes
+
+O endereço do servidor NÃO fica dentro do app: ele vem do arquivo **config.json** aqui no GitHub.
+Os clientes só digitam usuário e senha.
+
+1. Abra **github.com/marcolagift2022-cyber/MeuIPTVPlayer** e clique em **config.json**.
+2. Clique no **lápis** (✏️ Edit) no canto direito.
+3. Troque o endereço e clique em **Commit changes** (duas vezes).
+
+```json
+{
+  "dns": [
+    "http://servidor-principal.com",
+    "http://servidor-reserva.com:8080"
+  ],
+  "aviso": "Texto que aparece no menu dos clientes (deixe \"\" para não mostrar nada)"
+}
+```
+
+- O app tenta os DNS **na ordem**: se o primeiro cair, usa o próximo sozinho.
+- A mudança chega aos clientes na próxima vez que abrirem o app (pode levar até ~5 minutos).
+- Cuidado com as aspas e vírgulas: entre um DNS e outro vai vírgula, depois do último não.
+
 ## Personalizar
 
 | O que mudar | Onde |

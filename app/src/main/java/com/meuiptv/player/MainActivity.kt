@@ -22,7 +22,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         findViewById<TextView>(R.id.account).text =
-            if (account.isXtream) "${account.username} · ${account.server}" else "Lista M3U"
+            if (account.isXtream) "Usuário: ${account.username}" else "Lista M3U"
+
+        val notice = intent.getStringExtra(EXTRA_NOTICE).orEmpty()
+        findViewById<TextView>(R.id.notice).apply {
+            text = notice
+            visibility = if (notice.isBlank()) android.view.View.GONE else android.view.View.VISIBLE
+        }
 
         val live = findViewById<Button>(R.id.btn_live)
         live.setOnClickListener { open(Kind.LIVE) }

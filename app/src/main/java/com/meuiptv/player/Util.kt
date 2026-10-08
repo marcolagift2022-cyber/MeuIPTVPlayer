@@ -11,6 +11,7 @@ import javax.net.ssl.SSLException
 const val EXTRA_KIND = "kind"
 const val EXTRA_ID = "id"
 const val EXTRA_NAME = "name"
+const val EXTRA_NOTICE = "notice"
 
 /** Transforma erros técnicos em mensagens que o usuário entende. */
 fun friendlyError(e: Throwable): String = when (e) {
@@ -20,6 +21,16 @@ fun friendlyError(e: Throwable): String = when (e) {
     is SSLException -> "Erro de segurança (HTTPS) ao conectar. Tente o endereço com http://"
     is JSONException -> "O servidor respondeu em um formato inesperado."
     else -> e.message ?: "Erro desconhecido."
+}
+
+/** Aceita "servidor.com:8080" e completa para "http://servidor.com:8080". */
+fun normalizeUrl(raw: String): String {
+    var s = raw.trim()
+    if (s.isEmpty()) return s
+    if (!s.startsWith("http://", ignoreCase = true) && !s.startsWith("https://", ignoreCase = true)) {
+        s = "http://$s"
+    }
+    return s.trimEnd('/')
 }
 
 fun Context.toast(message: String) {

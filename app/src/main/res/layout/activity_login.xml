@@ -14,65 +14,54 @@
         android:paddingEnd="@dimen/form_side_padding"
         android:paddingBottom="32dp">
 
+        <ImageView
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:layout_gravity="center_horizontal"
+            android:contentDescription="@null"
+            android:src="@mipmap/ic_launcher" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="12dp"
             android:text="@string/app_name"
             android:textColor="@color/text"
-            android:textSize="30sp"
+            android:textSize="28sp"
             android:textStyle="bold" />
 
+        <!-- Aparece enquanto o app conecta sozinho com o login salvo -->
         <TextView
+            android:id="@+id/status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Entre com os dados que o seu provedor enviou."
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:text="Conectando..."
             android:textColor="@color/text_dim"
-            android:textSize="15sp" />
-
-        <RadioGroup
-            android:id="@+id/type_group"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:orientation="horizontal">
-
-            <RadioButton
-                android:id="@+id/type_xtream"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:padding="8dp"
-                android:text="Xtream Codes"
-                android:textColor="@color/text"
-                android:textSize="16sp" />
-
-            <RadioButton
-                android:id="@+id/type_m3u"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:padding="8dp"
-                android:text="Lista M3U"
-                android:textColor="@color/text"
-                android:textSize="16sp" />
-        </RadioGroup>
+            android:textSize="16sp"
+            android:visibility="gone" />
 
         <LinearLayout
-            android:id="@+id/xtream_fields"
+            android:id="@+id/form"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <EditText
-                android:id="@+id/server"
-                style="@style/Input"
-                android:hint="Servidor (ex: http://servidor.com:8080)"
-                android:inputType="textUri" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="4dp"
+                android:text="Digite o usuário e a senha da sua assinatura."
+                android:textColor="@color/text_dim"
+                android:textSize="15sp" />
 
             <EditText
                 android:id="@+id/username"
                 style="@style/Input"
+                android:layout_marginTop="20dp"
                 android:hint="Usuário"
                 android:inputType="text" />
 
@@ -80,34 +69,21 @@
                 android:id="@+id/password"
                 style="@style/Input"
                 android:hint="Senha"
+                android:imeOptions="actionDone"
                 android:inputType="textPassword" />
+
+            <Button
+                android:id="@+id/enter"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/bg_focus"
+                android:text="Entrar"
+                android:textAllCaps="false"
+                android:textColor="@color/text"
+                android:textSize="18sp"
+                android:textStyle="bold" />
         </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/m3u_fields"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-            <EditText
-                android:id="@+id/m3u_url"
-                style="@style/Input"
-                android:hint="Link da lista (http://...m3u)"
-                android:inputType="textUri" />
-        </LinearLayout>
-
-        <Button
-            android:id="@+id/enter"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/bg_focus"
-            android:text="Entrar"
-            android:textAllCaps="false"
-            android:textColor="@color/text"
-            android:textSize="18sp"
-            android:textStyle="bold" />
 
         <ProgressBar
             android:id="@+id/progress"
@@ -122,16 +98,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
+            android:gravity="center_horizontal"
             android:textColor="@color/error"
             android:textSize="15sp"
             android:visibility="gone" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Este aplicativo é apenas um reprodutor. Ele não fornece canais nem conteúdo."
-            android:textColor="@color/text_dim"
-            android:textSize="13sp" />
     </LinearLayout>
 </ScrollView>
