@@ -16,12 +16,24 @@ android {
         versionName = "1.0"
     }
 
+    // Chave fixa SÓ PARA TESTES: assim cada APK novo instala por cima do anterior.
+    // Para publicar na Play Store, crie outra chave e guarde fora do GitHub (veja o LEIA-ME).
+    signingConfigs {
+        create("teste") {
+            storeFile = file("teste.keystore")
+            storePassword = "xbrteste"
+            keyAlias = "teste"
+            keyPassword = "xbrteste"
+        }
+    }
+
     buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("teste")
+        }
         release {
             isMinifyEnabled = false
-            // Assinado com a chave de teste para que o APK instale direto na TV Box.
-            // Para publicar na Play Store, crie sua própria chave (veja o LEIA-ME).
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("teste")
         }
     }
 
