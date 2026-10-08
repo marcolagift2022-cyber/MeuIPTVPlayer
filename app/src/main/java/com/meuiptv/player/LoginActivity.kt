@@ -2,10 +2,13 @@ package com.meuiptv.player
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.method.HideReturnsTransformationMethod
+import android.text.method.PasswordTransformationMethod
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -40,6 +43,25 @@ class LoginActivity : AppCompatActivity() {
         enter = findViewById(R.id.enter)
         progress = findViewById(R.id.progress)
         error = findViewById(R.id.error)
+
+        // Olhinho: mostra/esconde a senha digitada
+        val toggle = findViewById<ImageButton>(R.id.toggle_password)
+        var passwordVisible = false
+        // Espaço à direita para o texto não ficar embaixo do olhinho
+        password.setPaddingRelative(
+            password.paddingStart, password.paddingTop,
+            (60 * resources.displayMetrics.density).toInt(), password.paddingBottom,
+        )
+        toggle.setOnClickListener {
+            passwordVisible = !passwordVisible
+            val cursor = password.selectionEnd
+            password.transformationMethod =
+                if (passwordVisible) HideReturnsTransformationMethod.getInstance()
+                else PasswordTransformationMethod.getInstance()
+            password.setSelection(cursor.coerceIn(0, password.text.length))
+            toggle.setImageResource(if (passwordVisible) R.drawable.ic_eye_off else R.drawable.ic_eye)
+            toggle.contentDescription = if (passwordVisible) "Esconder senha" else "Mostrar senha"
+        }
 
         enter.setOnClickListener { login(username.text.toString().trim(), password.text.toString().trim(), auto = false) }
         password.setOnEditorActionListener { _, actionId, _ ->

@@ -65,12 +65,33 @@
                 android:hint="Usuário"
                 android:inputType="text" />
 
-            <EditText
-                android:id="@+id/password"
-                style="@style/Input"
-                android:hint="Senha"
-                android:imeOptions="actionDone"
-                android:inputType="textPassword" />
+            <!-- Senha com o "olhinho" para mostrar/esconder -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp">
+
+                <EditText
+                    android:id="@+id/password"
+                    style="@style/Input"
+                    android:layout_marginTop="0dp"
+                    android:hint="Senha"
+                    android:imeOptions="actionDone"
+                    android:inputType="textPassword" />
+
+                <ImageButton
+                    android:id="@+id/toggle_password"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="end|center_vertical"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/bg_eye"
+                    android:contentDescription="Mostrar senha"
+                    android:focusable="true"
+                    android:padding="10dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_eye" />
+            </FrameLayout>
 
             <Button
                 android:id="@+id/enter"
