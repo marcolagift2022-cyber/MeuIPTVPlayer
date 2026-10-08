@@ -4,6 +4,9 @@ on:
   push:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,8 +24,21 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug --stacktrace
+          cp app/build/outputs/apk/debug/app-debug.apk MeuIPTVPlayer.apk
 
       - uses: actions/upload-artifact@v4
         with:
           name: MeuIPTVPlayer-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: MeuIPTVPlayer.apk
+
+      # Publica o APK num link fixo:
+      # https://github.com/<usuario>/MeuIPTVPlayer/releases/latest/download/MeuIPTVPlayer.apk
+      - name: Publicar APK para download
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v1.0.${{ github.run_number }}"
+          gh release create "$TAG" MeuIPTVPlayer.apk \
+            --title "Meu IPTV Player $TAG" \
+            --notes "APK para instalar no celular, TV Box ou emulador." \
+            --latest
