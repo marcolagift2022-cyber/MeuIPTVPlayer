@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="side_padding">40dp</dimen>
+    <dimen name="form_side_padding">180dp</dimen>
+    <dimen name="menu_button_height">150dp</dimen>
+</resources>
