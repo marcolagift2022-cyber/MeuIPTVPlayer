@@ -36,6 +36,10 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btn_series).setOnClickListener { open(Kind.SERIES) }
         findViewById<Button>(R.id.btn_favorites).setOnClickListener { open(Kind.FAV) }
         findViewById<Button>(R.id.logout).setOnClickListener { confirmLogout() }
+        findViewById<android.view.View>(R.id.btn_refresh).setOnClickListener {
+            Repository.refresh()
+            toast("Lista atualizada! Os conteúdos novos já vão aparecer.")
+        }
 
         live.requestFocus() // foco inicial para quem usa controle remoto
     }

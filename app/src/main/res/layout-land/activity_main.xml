@@ -45,17 +45,37 @@
             android:textSize="15sp"
             android:visibility="gone" />
 
-        <Button
-            android:id="@+id/logout"
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="44dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:background="@drawable/bg_focus"
-            android:paddingStart="28dp"
-            android:paddingEnd="28dp"
-            android:text="Sair"
-            android:textAllCaps="false"
-            android:textColor="@color/text" />
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_refresh"
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_focus"
+                android:drawableStart="@drawable/ic_refresh"
+                android:drawablePadding="8dp"
+                android:paddingStart="18dp"
+                android:paddingEnd="20dp"
+                android:text="Atualizar lista"
+                android:textAllCaps="false"
+                android:textColor="@color/text" />
+
+            <Button
+                android:id="@+id/logout"
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:layout_marginStart="10dp"
+                android:background="@drawable/bg_focus"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:text="Sair"
+                android:textAllCaps="false"
+                android:textColor="@color/text" />
+        </LinearLayout>
     </LinearLayout>
 
     <LinearLayout

@@ -28,6 +28,16 @@
             android:text="Sair"
             android:textAllCaps="false"
             android:textColor="@color/text" />
+
+        <ImageButton
+            android:id="@+id/btn_refresh"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="top|start"
+            android:background="@drawable/bg_focus"
+            android:contentDescription="Atualizar lista"
+            android:padding="8dp"
+            android:src="@drawable/ic_refresh" />
     </FrameLayout>
 
     <TextView

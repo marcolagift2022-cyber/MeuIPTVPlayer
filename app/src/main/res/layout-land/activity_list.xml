@@ -31,6 +31,16 @@
             android:hint="Buscar nesta categoria"
             android:imeOptions="actionSearch"
             android:inputType="text" />
+
+        <ImageButton
+            android:id="@+id/refresh"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/bg_focus"
+            android:contentDescription="Atualizar lista"
+            android:padding="12dp"
+            android:src="@drawable/ic_refresh" />
     </LinearLayout>
 
     <LinearLayout

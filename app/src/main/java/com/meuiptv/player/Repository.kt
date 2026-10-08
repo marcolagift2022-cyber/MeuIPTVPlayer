@@ -22,6 +22,13 @@ object Repository {
         }
     }
 
+    /** Esquece as listas guardadas: o próximo acesso baixa tudo de novo do servidor. */
+    @Synchronized
+    fun refresh() {
+        m3u = null
+        synchronized(cache) { cache.clear() }
+    }
+
     @Synchronized
     fun clear() {
         account = null

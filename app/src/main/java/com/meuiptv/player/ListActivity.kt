@@ -79,6 +79,15 @@ class ListActivity : AppCompatActivity() {
         }
 
         search.doAfterTextChanged { applyFilter() }
+
+        // Botão atualizar: baixa de novo as categorias e o conteúdo do servidor
+        findViewById<View>(R.id.refresh).setOnClickListener {
+            val keep = categories.getOrNull(currentCat)?.id
+            Repository.refresh()
+            toast("Atualizando lista...")
+            loadCategories(keep)
+        }
+
         loadCategories()
     }
 
@@ -89,21 +98,21 @@ class ListActivity : AppCompatActivity() {
         if (kind == Kind.FAV) selectCategory(currentCat) else itemAdapter.favoriteKeys = prefs.favoriteKeys()
     }
 
-    private fun loadCategories() {
+    private fun loadCategories(keepCategoryId: String? = null) {
         if (kind == Kind.FAV) {
             categories = listOf(
                 Category(Kind.LIVE, "TV ao vivo"),
                 Category(Kind.MOVIE, "Filmes"),
                 Category(Kind.SERIES, "Séries"),
             )
-            showCategories()
+            showCategories(keepCategoryId)
             return
         }
         setLoading(true)
         lifecycleScope.launch {
             try {
                 categories = withContext(Dispatchers.IO) { Repository.categories(kind) }
-                showCategories()
+                showCategories(keepCategoryId)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -113,7 +122,7 @@ class ListActivity : AppCompatActivity() {
         }
     }
 
-    private fun showCategories() {
+    private fun showCategories(keepCategoryId: String? = null) {
         catAdapter.labels = categories.map { it.name }
         if (categories.isEmpty()) {
             setLoading(false)
@@ -121,7 +130,14 @@ class ListActivity : AppCompatActivity() {
             return
         }
         // Começa na primeira categoria real (a posição 0 é "Todos", que pode ser enorme)
-        selectCategory(if (kind != Kind.FAV && categories.size > 1) 1 else 0)
+        val kept = categories.indexOfFirst { it.id == keepCategoryId }
+        selectCategory(
+            when {
+                kept >= 0 -> kept
+                kind != Kind.FAV && categories.size > 1 -> 1
+                else -> 0
+            }
+        )
     }
 
     private fun selectCategory(index: Int) {
