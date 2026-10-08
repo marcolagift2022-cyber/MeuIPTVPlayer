@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="bg">#0E1116</color>
-    <color name="surface">#1A1F27</color>
-    <color name="surface_focus">#26303D</color>
-    <color name="accent">#2EC4B6</color>
-    <color name="accent_dim">#1F5F5A</color>
+    <color name="bg">#0A0F0B</color>
+    <!-- Cards e campos semitransparentes ("vidro") por cima do fundo verde -->
+    <color name="surface">#D9141A17</color>
+    <color name="surface_focus">#E6203A27</color>
+    <!-- Verde do logo X BR TOP CINE -->
+    <color name="accent">#3ADB5C</color>
+    <color name="accent_dim">#B31E7A35</color>
     <color name="text">#F2F4F7</color>
-    <color name="text_dim">#9AA4B2</color>
+    <color name="text_dim">#A9B5AC</color>
     <color name="error">#FF6B6B</color>
     <color name="star">#FFC93C</color>
 </resources>
