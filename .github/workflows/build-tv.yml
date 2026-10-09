@@ -38,6 +38,13 @@ jobs:
           cp tv/webos/* build/webos/
           jq --arg v "$VERSION" '.version = $v' tv/webos/appinfo.json > build/webos/appinfo.json
 
+          # LG webOS — versão 1280x720 (TVs Full HD/HD): mesma tela, reduzida para 720p
+          mkdir -p build/webos720
+          cp -r build/webos/* build/webos720/
+          jq '.resolution = "1280x720"' build/webos/appinfo.json > build/webos720/appinfo.json
+          sed -i 's|<meta name="viewport" content="width=1920, height=1080, user-scalable=no">|<meta name="viewport" content="width=1280, height=720, user-scalable=no">\n  <style>html { zoom: 0.666667; }</style>|' build/webos720/index.html
+          grep -q 'zoom: 0.666667' build/webos720/index.html
+
           # Samsung Tizen
           mkdir -p build/tizen
           cp -r tv/webapp/* build/tizen/
@@ -50,6 +57,9 @@ jobs:
           mkdir -p out
           ares-package build/webos -o out
           mv out/*.ipk "out/XBRTopCine-LG-$VERSION.ipk"
+          mkdir -p out720
+          ares-package build/webos720 -o out720
+          mv out720/*.ipk "out/XBRTopCine-LG-$VERSION-1280x720.ipk"
 
       - name: Empacotar Samsung (projeto Tizen) e versão web
         run: |
@@ -63,5 +73,5 @@ jobs:
         run: |
           gh release create "tv-v$VERSION" out/* \
             --title "TV LG / Samsung $VERSION" \
-            --notes "Versão para TVs LG (webOS) e Samsung (Tizen). Veja tv/LEIA-ME-TV.md para instalar." \
+            --notes "Versão para TVs LG (webOS) e Samsung (Tizen). Na loja LG envie os dois .ipk: o normal (1920x1080) e o -1280x720. Veja tv/LEIA-ME-TV.md para instalar." \
             --latest=false

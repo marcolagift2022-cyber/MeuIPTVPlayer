@@ -53,3 +53,11 @@ https://github.com/marcolagift2022-cyber/MeuIPTVPlayer/blob/main/PRIVACIDADE.md
 
 ## Capturas de tela
 Tire com a **lista de demonstração** acima (não use canais/filmes reais nem logos de emissoras).
+
+## Envio feito em 09/10/2026 (versão 1.0.1)
+Foram enviados **dois** arquivos .ipk no mesmo cadastro (App ID com.xbrtopcine.player):
+- `XBRTopCine-LG-1.0.1.ipk`: resolução 1920x1080
+- `XBRTopCine-LG-1.0.1-1280x720.ipk`: resolução 1280x720, para TVs HD/Full HD (guardado em `loja/enviado-lg/`)
+
+A versão 720p é o mesmo app com `"resolution": "1280x720"` no appinfo.json, viewport 1280x720 e `zoom: 0.666667` no index.html.
+O GitHub Actions ("Gerar app de TV") agora gera os dois arquivos automaticamente. Num reenvio, use uma versão **maior** que 1.0.1.
