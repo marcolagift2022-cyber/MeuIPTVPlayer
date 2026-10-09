@@ -40,13 +40,56 @@
             android:orientation="vertical">
 
             <TextView
+                android:id="@+id/subtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="4dp"
+                android:gravity="center_horizontal"
                 android:text="Digite o usuário e a senha da sua assinatura."
                 android:textColor="@color/text_dim"
                 android:textSize="15sp" />
+
+            <!-- Só na versão da Play Store: escolher Xtream Codes ou lista M3U -->
+            <LinearLayout
+                android:id="@+id/tabs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <Button
+                    android:id="@+id/tab_xtream"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_focus"
+                    android:text="Xtream Codes"
+                    android:textAllCaps="false"
+                    android:textColor="@color/text"
+                    android:textSize="16sp" />
+
+                <Button
+                    android:id="@+id/tab_m3u"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_focus"
+                    android:text="Lista M3U"
+                    android:textAllCaps="false"
+                    android:textColor="@color/text"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/server"
+                style="@style/Input"
+                android:layout_marginTop="16dp"
+                android:hint="Servidor (ex.: http://servidor.com:8080)"
+                android:inputType="textUri"
+                android:visibility="gone" />
 
             <EditText
                 android:id="@+id/username"
@@ -57,6 +100,7 @@
 
             <!-- Senha com o "olhinho" para mostrar/esconder -->
             <FrameLayout
+                android:id="@+id/password_box"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp">
@@ -82,6 +126,15 @@
                     android:scaleType="fitCenter"
                     android:src="@drawable/ic_eye" />
             </FrameLayout>
+
+            <EditText
+                android:id="@+id/m3u"
+                style="@style/Input"
+                android:layout_marginTop="16dp"
+                android:hint="Link da lista M3U (http://...)"
+                android:imeOptions="actionDone"
+                android:inputType="textUri"
+                android:visibility="gone" />
 
             <Button
                 android:id="@+id/enter"
@@ -112,6 +165,18 @@
             android:gravity="center_horizontal"
             android:textColor="@color/error"
             android:textSize="15sp"
+            android:visibility="gone" />
+
+        <!-- Só na versão da Play Store -->
+        <TextView
+            android:id="@+id/disclaimer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="center_horizontal"
+            android:text="Este aplicativo é apenas um reprodutor de mídia. Ele não fornece canais, filmes, séries nem listas: use a conta ou a lista do seu próprio provedor."
+            android:textColor="@color/text_dim"
+            android:textSize="13sp"
             android:visibility="gone" />
     </LinearLayout>
 </ScrollView>

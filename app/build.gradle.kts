@@ -5,10 +5,9 @@ plugins {
 
 android {
     namespace = "com.meuiptv.player"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
-        // Troque por um identificador seu antes de publicar (ex: com.seunome.iptv)
         applicationId = "com.meuiptv.player"
         minSdk = 21
         targetSdk = 34
@@ -27,6 +26,42 @@ android {
             keyAlias = "teste"
             keyPassword = "xbrteste"
         }
+        // Chave da Play Store: NUNCA fica no GitHub. O GitHub Actions monta o arquivo
+        // a partir dos "Secrets" do repositório (veja .github/workflows/build-play.yml).
+        val uploadKeystore = System.getenv("UPLOAD_KEYSTORE_FILE")
+        if (uploadKeystore != null && file(uploadKeystore).exists()) {
+            create("upload") {
+                storeFile = file(uploadKeystore)
+                storePassword = System.getenv("UPLOAD_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("UPLOAD_KEY_ALIAS")
+                keyPassword = System.getenv("UPLOAD_KEY_PASSWORD")
+            }
+        }
+    }
+
+    buildFeatures {
+        buildConfig = true
+    }
+
+    // Duas versões do mesmo app:
+    //  - direto: a de hoje (Downloader/APK). DNS na nuvem, cliente digita só usuário e senha,
+    //            e o próprio app avisa e instala atualizações.
+    //  - play:   para a Google Play. Reprodutor genérico (o cliente informa o servidor ou a lista),
+    //            sem atualização própria (quem atualiza é a Play Store).
+    flavorDimensions += "loja"
+    productFlavors {
+        create("direto") {
+            dimension = "loja"
+            applicationId = "com.meuiptv.player"
+            targetSdk = 34
+            buildConfigField("boolean", "PLAY_STORE", "false")
+        }
+        create("play") {
+            dimension = "loja"
+            applicationId = "com.xbrtopcine.player"
+            targetSdk = 36
+            buildConfigField("boolean", "PLAY_STORE", "true")
+        }
     }
 
     buildTypes {
@@ -35,7 +70,7 @@ android {
         }
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("teste")
+            signingConfig = signingConfigs.findByName("upload") ?: signingConfigs.getByName("teste")
         }
     }
 

@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Para instalar as atualizações baixadas pelo próprio app -->
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- A permissão de instalar atualizações fica só na versão "direto" (src/direto/AndroidManifest.xml).
+         A Google Play não permite apps que se atualizam sozinhos. -->
 
     <!-- Permite instalar em celular, TV Box e Android TV -->
     <uses-feature android:name="android.software.leanback" android:required="false" />
@@ -41,15 +41,6 @@
             android:windowSoftInputMode="adjustResize" />
         <activity android:name=".SettingsActivity" />
 
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider>
         <activity
             android:name=".PlayerActivity"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"

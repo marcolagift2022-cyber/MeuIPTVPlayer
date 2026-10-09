@@ -1,0 +1,76 @@
+name: Gerar app da Play Store
+
+# Versão "play" do app Android: reprodutor genérico, sem atualização própria.
+# Gera o .aab (o arquivo que vai para a Google Play) e um APK para testar no celular.
+on:
+  push:
+    paths:
+      - "app/**"
+      - "build.gradle.kts"
+      - "settings.gradle.kts"
+      - "gradle/**"
+      - ".github/workflows/build-play.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # A chave da Play fica criptografada em app/play-upload.jks.enc.
+      # A senha fica no Secret "PLAY_KEY_SENHA" (Settings > Secrets and variables > Actions).
+      - name: Abrir a chave da Play Store
+        env:
+          PLAY_KEY_SENHA: ${{ secrets.PLAY_KEY_SENHA }}
+        run: |
+          if [ -z "$PLAY_KEY_SENHA" ]; then
+            echo "TEM_CHAVE=nao" >> $GITHUB_ENV
+            echo "Secret PLAY_KEY_SENHA não cadastrado: vou gerar só o APK de teste."
+            exit 0
+          fi
+          openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in app/play-upload.jks.enc -out "$RUNNER_TEMP/upload.jks" -pass env:PLAY_KEY_SENHA
+          {
+            echo "TEM_CHAVE=sim"
+            echo "UPLOAD_KEYSTORE_FILE=$RUNNER_TEMP/upload.jks"
+            echo "UPLOAD_KEY_ALIAS=upload"
+            echo "UPLOAD_KEYSTORE_PASSWORD=$PLAY_KEY_SENHA"
+            echo "UPLOAD_KEY_PASSWORD=$PLAY_KEY_SENHA"
+          } >> $GITHUB_ENV
+
+      - name: Compilar
+        run: |
+          chmod +x gradlew
+          mkdir -p out
+          V="1.0.${{ github.run_number }}"
+          echo "VERSION=$V" >> $GITHUB_ENV
+          if [ "$TEM_CHAVE" = "sim" ]; then
+            ./gradlew bundlePlayRelease assemblePlayRelease --stacktrace
+            cp app/build/outputs/bundle/playRelease/app-play-release.aab "out/XBRTopCine-Play-$V.aab"
+            cp app/build/outputs/apk/play/release/app-play-release.apk "out/XBRTopCine-Play-$V-teste.apk"
+          else
+            ./gradlew assemblePlayDebug --stacktrace
+            cp app/build/outputs/apk/play/debug/app-play-debug.apk "out/XBRTopCine-Play-$V-teste.apk"
+          fi
+          ls -la out
+
+      - name: Publicar
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$TEM_CHAVE" = "sim" ]; then
+            NOTES="Versão para a Google Play. Envie o arquivo .aab no Play Console. O APK '-teste' é para instalar no celular e testar."
+          else
+            NOTES="ATENÇÃO: sem o Secret PLAY_KEY_SENHA, só foi gerado o APK de teste (sem o .aab da Play)."
+          fi
+          gh release create "play-v$VERSION" out/* --title "Google Play $VERSION" --notes "$NOTES" --latest=false

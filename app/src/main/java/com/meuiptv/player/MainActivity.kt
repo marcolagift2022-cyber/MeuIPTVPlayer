@@ -71,13 +71,14 @@ class MainActivity : AppCompatActivity() {
 
         live.requestFocus() // foco inicial para quem usa controle remoto
 
-        // Versão nova no config.json? Mostra o aviso de atualização
-        Updater.checkAndPrompt(this)
+        // Versão nova no config.json? Mostra o aviso de atualização (só na versão "direto";
+        // na Google Play quem atualiza é a própria loja)
+        if (!BuildConfig.PLAY_STORE) Updater.checkAndPrompt(this)
     }
 
     override fun onResume() {
         super.onResume()
-        Updater.resumePending(this) // voltando da tela de permissão de instalação
+        if (!BuildConfig.PLAY_STORE) Updater.resumePending(this) // voltando da tela de permissão de instalação
     }
 
     override fun onStart() {

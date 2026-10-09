@@ -11,6 +11,7 @@ on:
       - "roku/**"
       - ".github/workflows/build-roku.yml"
       - ".github/workflows/build-tv.yml"
+      - ".github/workflows/build-play.yml"
   workflow_dispatch:
 
 permissions:
@@ -32,8 +33,9 @@ jobs:
       - name: Compilar APK
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
-          cp app/build/outputs/apk/debug/app-debug.apk MeuIPTVPlayer.apk
+          # Versão "direto" (Downloader): DNS na nuvem + atualização automática
+          ./gradlew assembleDiretoDebug --stacktrace
+          cp app/build/outputs/apk/direto/debug/app-direto-debug.apk MeuIPTVPlayer.apk
 
       - uses: actions/upload-artifact@v4
         with:
