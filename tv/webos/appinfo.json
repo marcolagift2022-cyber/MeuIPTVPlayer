@@ -1,0 +1,13 @@
+{
+  "id": "com.xbrtopcine.player",
+  "version": "1.0.0",
+  "vendor": "X BR TOP CINE",
+  "type": "web",
+  "main": "index.html",
+  "title": "X BR TOP CINE",
+  "icon": "icon.png",
+  "largeIcon": "largeIcon.png",
+  "resolution": "1920x1080",
+  "disableBackHistoryAPI": true,
+  "transparent": false
+}

@@ -1,0 +1,67 @@
+name: Gerar app de TV (LG e Samsung)
+
+on:
+  push:
+    paths:
+      - "tv/**"
+      - ".github/workflows/build-tv.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Preparar arquivos
+        run: |
+          VERSION="1.0.${{ github.run_number }}"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+          # Biblioteca de vídeo HLS (hls.js)
+          mkdir -p /tmp/hls && cd /tmp/hls
+          npm pack hls.js@1 --silent
+          tar xzf hls.js-*.tgz
+          cd $GITHUB_WORKSPACE
+          cp /tmp/hls/package/dist/hls.min.js tv/webapp/js/hls.min.js
+
+          # LG webOS
+          mkdir -p build/webos
+          cp -r tv/webapp/* build/webos/
+          cp tv/webos/* build/webos/
+          jq --arg v "$VERSION" '.version = $v' tv/webos/appinfo.json > build/webos/appinfo.json
+
+          # Samsung Tizen
+          mkdir -p build/tizen
+          cp -r tv/webapp/* build/tizen/
+          cp tv/tizen/* build/tizen/
+          sed -i "s/version=\"1.0.0\"/version=\"$VERSION\"/" build/tizen/config.xml
+
+      - name: Empacotar LG (.ipk)
+        run: |
+          npm install -g @webos-tools/cli
+          mkdir -p out
+          ares-package build/webos -o out
+          mv out/*.ipk "out/XBRTopCine-LG-$VERSION.ipk"
+
+      - name: Empacotar Samsung (projeto Tizen) e versão web
+        run: |
+          (cd build/tizen && zip -qr "$GITHUB_WORKSPACE/out/XBRTopCine-Samsung-Tizen-$VERSION.zip" .)
+          (cd tv/webapp && zip -qr "$GITHUB_WORKSPACE/out/XBRTopCine-Web-$VERSION.zip" .)
+          ls -la out
+
+      - name: Publicar
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "tv-v$VERSION" out/* \
+            --title "TV LG / Samsung $VERSION" \
+            --notes "Versão para TVs LG (webOS) e Samsung (Tizen). Veja tv/LEIA-ME-TV.md para instalar." \
+            --latest=false

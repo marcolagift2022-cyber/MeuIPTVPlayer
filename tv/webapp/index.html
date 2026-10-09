@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=1920, height=1080, user-scalable=no">
+  <title>X BR TOP CINE</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="bg"></div>
+
+  <!-- ===================== LOGIN ===================== -->
+  <section id="screen-login" class="screen">
+    <div class="login-box">
+      <img class="login-logo" src="img/logo.png" alt="">
+      <p class="sub">Entre com os dados do seu provedor de IPTV.</p>
+
+      <div class="tabs">
+        <button class="focusable tab active" id="tab-xtream">Xtream Codes</button>
+        <button class="focusable tab" id="tab-m3u">Lista M3U</button>
+      </div>
+
+      <div id="xtream-fields">
+        <input id="in-server" class="focusable input" type="text" placeholder="Servidor (ex: http://servidor.com:8080)" autocomplete="off">
+        <input id="in-user" class="focusable input" type="text" placeholder="Usuário" autocomplete="off">
+        <input id="in-pass" class="focusable input" type="password" placeholder="Senha" autocomplete="off">
+      </div>
+      <div id="m3u-fields" class="hidden">
+        <input id="in-m3u" class="focusable input" type="text" placeholder="Link da lista M3U (http://...)" autocomplete="off">
+      </div>
+
+      <button id="btn-login" class="focusable btn primary">Entrar</button>
+      <div id="login-loading" class="spinner hidden"></div>
+      <p id="login-error" class="error"></p>
+      <p class="disclaimer">Este aplicativo é apenas um reprodutor de mídia. Ele não fornece canais, filmes, séries ou listas.
+        Use apenas conteúdo que você tem o direito de assistir.</p>
+    </div>
+  </section>
+
+  <!-- ===================== MENU ===================== -->
+  <section id="screen-home" class="screen hidden">
+    <div class="home-left">
+      <div id="clock" class="clock"></div>
+      <div id="home-user" class="muted"></div>
+      <div id="home-exp" class="exp"></div>
+      <img class="home-logo" src="img/logo.png" alt="">
+      <div class="toolbar">
+        <button class="focusable tool" id="btn-search"><span class="ico ico-search"></span>Buscar</button>
+        <button class="focusable tool" id="btn-refresh"><span class="ico ico-refresh"></span>Atualizar</button>
+        <button class="focusable tool" id="btn-logout"><span class="ico ico-logout"></span>Sair</button>
+      </div>
+    </div>
+    <div class="home-grid">
+      <button class="focusable tile" id="tile-live"><span class="ico big ico-live"></span>TV ao vivo</button>
+      <button class="focusable tile" id="tile-movie"><span class="ico big ico-movie"></span>Filmes</button>
+      <button class="focusable tile" id="tile-series"><span class="ico big ico-series"></span>Séries</button>
+      <button class="focusable tile" id="tile-fav"><span class="ico big ico-star"></span>Favoritos</button>
+    </div>
+  </section>
+
+  <!-- ===================== LISTA (categorias + grade) ===================== -->
+  <section id="screen-list" class="screen hidden">
+    <div class="list-header">
+      <h1 id="list-title"></h1>
+      <input id="list-search" class="focusable input small" type="text" placeholder="Buscar nesta categoria" autocomplete="off">
+    </div>
+    <div class="list-body">
+      <div id="cat-list" class="cat-list scroll"></div>
+      <div class="grid-wrap">
+        <div id="grid" class="grid scroll"></div>
+        <div id="list-loading" class="spinner center hidden"></div>
+        <p id="list-msg" class="msg hidden"></p>
+      </div>
+    </div>
+    <p class="hint">OK: abrir &nbsp;·&nbsp; Botão vermelho: favoritar &nbsp;·&nbsp; Voltar: sair</p>
+  </section>
+
+  <!-- ===================== BUSCA ===================== -->
+  <section id="screen-search" class="screen hidden">
+    <div class="list-header">
+      <h1>Buscar</h1>
+      <input id="search-input" class="focusable input small wide" type="text" placeholder="Canal, filme ou série..." autocomplete="off">
+    </div>
+    <div id="search-tabs" class="search-tabs"></div>
+    <div class="grid-wrap full">
+      <div id="search-grid" class="grid scroll"></div>
+      <div id="search-loading" class="spinner center hidden"></div>
+      <p id="search-msg" class="msg">Digite pelo menos 2 letras para buscar.</p>
+    </div>
+  </section>
+
+  <!-- ===================== EPISÓDIOS ===================== -->
+  <section id="screen-episodes" class="screen hidden">
+    <div class="list-header"><h1 id="ep-title"></h1></div>
+    <div id="ep-list" class="ep-list scroll"></div>
+    <div id="ep-loading" class="spinner center hidden"></div>
+    <p id="ep-msg" class="msg hidden"></p>
+  </section>
+
+  <!-- ===================== PLAYER ===================== -->
+  <section id="screen-player" class="screen hidden">
+    <video id="video" autoplay></video>
+    <div id="player-loading" class="spinner center hidden"></div>
+    <div id="osd" class="osd hidden">
+      <div id="osd-name" class="osd-name"></div>
+      <div id="osd-epg" class="osd-epg"></div>
+      <div id="osd-hint" class="osd-hint"></div>
+    </div>
+    <div id="osd-bar" class="osd-bar hidden">
+      <span id="osd-time">00:00</span>
+      <div class="bar"><div id="osd-progress"></div></div>
+      <span id="osd-dur">00:00</span>
+    </div>
+  </section>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="js/hls.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

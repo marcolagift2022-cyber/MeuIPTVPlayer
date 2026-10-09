@@ -6,6 +6,8 @@ on:
     paths-ignore:
       - "config.json"
       - "**.md"
+      - "tv/**"
+      - ".github/workflows/build-tv.yml"
   workflow_dispatch:
 
 permissions:
