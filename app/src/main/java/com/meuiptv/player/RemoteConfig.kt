@@ -17,7 +17,7 @@ object RemoteConfig {
     /** Usado só se o app nunca conseguiu baixar a configuração. */
     private val DEFAULT_DNS = listOf("http://xbrtoprev.site")
 
-    data class Config(val dns: List<String>, val notice: String)
+    data class Config(val dns: List<String>, val notice: String, val userAgent: String = "")
 
     /** Baixa a configuração. Sem internet, usa a última que funcionou. Chame fora da thread principal. */
     fun load(context: Context): Config {
@@ -46,12 +46,16 @@ object RemoteConfig {
             }
         }
         if (list.isEmpty()) throw JSONException("config.json sem nenhum DNS")
-        return Config(list, if (o.isNull("aviso")) "" else o.optString("aviso").trim())
+        return Config(
+            dns = list,
+            notice = if (o.isNull("aviso")) "" else o.optString("aviso").trim(),
+            userAgent = if (o.isNull("user_agent")) "" else o.optString("user_agent").trim(),
+        )
     }
 }
 
 /** Resultado de uma tentativa de login. */
-data class LoginResult(val account: Account?, val error: String?, val wrongPassword: Boolean)
+data class LoginResult(val account: Account?, val error: String?, val wrongPassword: Boolean, val expDate: Long = 0L)
 
 /** Tenta o login em cada DNS da lista, na ordem, até um aceitar. */
 fun loginWithServers(user: String, pass: String, servers: List<String>): LoginResult {
@@ -60,7 +64,8 @@ fun loginWithServers(user: String, pass: String, servers: List<String>): LoginRe
     for (server in servers) {
         val account = Account(Account.TYPE_XTREAM, server = server, username = user, password = pass)
         try {
-            val err = XtreamApi(account).login() ?: return LoginResult(account, null, false)
+            val api = XtreamApi(account)
+            val err = api.login() ?: return LoginResult(account, null, false, api.expDate)
             if (authError == null) authError = err
         } catch (e: Exception) {
             if (networkError == null) networkError = friendlyError(e)

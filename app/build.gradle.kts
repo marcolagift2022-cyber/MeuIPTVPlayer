@@ -12,8 +12,10 @@ android {
         applicationId = "com.meuiptv.player"
         minSdk = 21
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        // No GitHub, cada compilação ganha um número novo (1.0.1, 1.0.2...)
+        val build = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
+        versionCode = build
+        versionName = "1.0.$build"
     }
 
     // Chave fixa SÓ PARA TESTES: assim cada APK novo instala por cima do anterior.

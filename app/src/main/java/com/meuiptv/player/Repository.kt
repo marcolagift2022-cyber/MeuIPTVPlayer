@@ -12,13 +12,14 @@ object Repository {
 
     private var m3u: List<Item>? = null
     private val cache = HashMap<String, List<Item>>()
+    private val catCache = HashMap<String, List<Category>>()
 
     @Synchronized
     fun init(a: Account) {
         if (a != account) {
             account = a
             m3u = null
-            synchronized(cache) { cache.clear() }
+            synchronized(cache) { cache.clear(); catCache.clear() }
         }
     }
 
@@ -26,14 +27,14 @@ object Repository {
     @Synchronized
     fun refresh() {
         m3u = null
-        synchronized(cache) { cache.clear() }
+        synchronized(cache) { cache.clear(); catCache.clear() }
     }
 
     @Synchronized
     fun clear() {
         account = null
         m3u = null
-        synchronized(cache) { cache.clear() }
+        synchronized(cache) { cache.clear(); catCache.clear() }
     }
 
     private fun acc(): Account = account ?: throw IllegalStateException("Faça login novamente.")
@@ -47,6 +48,7 @@ object Repository {
 
     fun categories(kind: String): List<Category> {
         val a = acc()
+        synchronized(cache) { catCache[kind] }?.let { return it }
         val cats = if (a.isXtream) {
             XtreamApi(a).categories(kind)
         } else {
@@ -57,8 +59,14 @@ object Repository {
                 .map { Category(it, it) }
                 .toList()
         }
-        return listOf(Category(Kind.ALL, "Todos")) + cats
+        val result = listOf(Category(Kind.ALL, "Todos")) + cats
+        synchronized(cache) { catCache[kind] = result }
+        return result
     }
+
+    /** Ids das categorias adultas de um tipo (para esconder no "Todos" e na busca). */
+    fun adultCategoryIds(kind: String): Set<String> =
+        categories(kind).filter { isAdult(it.name) }.map { it.id }.toSet()
 
     fun items(kind: String, categoryId: String): List<Item> {
         val a = acc()

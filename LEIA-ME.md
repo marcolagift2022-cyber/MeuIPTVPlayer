@@ -71,6 +71,7 @@ Os clientes só digitam usuário e senha.
 
 - O app tenta os DNS **na ordem**: se o primeiro cair, usa o próximo sozinho.
 - A mudança chega aos clientes na próxima vez que abrirem o app (pode levar até ~5 minutos).
+- `"user_agent"`: deixe `""`. Só preencha se o painel exigir um user-agent específico (ex.: `"IPTVSmartersPlayer"`).
 - Cuidado com as aspas e vírgulas: entre um DNS e outro vai vírgula, depois do último não.
 
 ## Personalizar

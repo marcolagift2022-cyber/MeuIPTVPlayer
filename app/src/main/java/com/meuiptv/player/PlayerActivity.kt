@@ -21,6 +21,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.PlayerView
@@ -108,13 +109,15 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun initPlayer() {
         val http = DefaultHttpDataSource.Factory()
-            .setUserAgent(Http.USER_AGENT)
+            .setUserAgent(Http.userAgent)
             .setAllowCrossProtocolRedirects(true)
             .setConnectTimeoutMs(15_000)
             .setReadTimeoutMs(20_000)
         val mediaSourceFactory = DefaultMediaSourceFactory(DefaultDataSource.Factory(this, http))
 
-        val p = ExoPlayer.Builder(this)
+        // Se o decoder principal do aparelho falhar, tenta outro sozinho
+        val renderers = DefaultRenderersFactory(this).setEnableDecoderFallback(true)
+        val p = ExoPlayer.Builder(this, renderers)
             .setMediaSourceFactory(mediaSourceFactory)
             .build()
         playerView.player = p
@@ -124,6 +127,8 @@ class PlayerActivity : AppCompatActivity() {
         p.setMediaItems(items.map { toMediaItem(it) }, startIndex, position)
         // Canais: ao passar do último volta ao primeiro. Episódios: para no fim da série.
         p.repeatMode = if (allLive) Player.REPEAT_MODE_ALL else Player.REPEAT_MODE_OFF
+        // Configuração "próximo episódio automático"
+        p.pauseAtEndOfMediaItems = !allLive && !Settings.autoNextEpisode
         p.addListener(listener)
         p.playWhenReady = true
         p.prepare()

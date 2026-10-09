@@ -1,64 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Menu no celular em pé: logo em cima, botões embaixo -->
+<!-- Menu no celular em pé: logo em cima, informações, botões embaixo -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="@dimen/side_padding">
 
-    <FrameLayout
+    <ImageView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="150dp"
+        android:contentDescription="@string/app_name"
+        android:scaleType="fitCenter"
+        android:src="@drawable/logo_art" />
 
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="170dp"
-            android:contentDescription="@string/app_name"
-            android:scaleType="fitCenter"
-            android:src="@drawable/logo_art" />
-
-        <Button
-            android:id="@+id/logout"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:layout_gravity="top|end"
-            android:background="@drawable/bg_focus"
-            android:paddingStart="18dp"
-            android:paddingEnd="18dp"
-            android:text="Sair"
-            android:textAllCaps="false"
-            android:textColor="@color/text" />
-
-        <ImageButton
-            android:id="@+id/btn_refresh"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_gravity="top|start"
-            android:background="@drawable/bg_focus"
-            android:contentDescription="Atualizar lista"
-            android:padding="8dp"
-            android:src="@drawable/ic_refresh" />
-    </FrameLayout>
-
-    <TextView
-        android:id="@+id/account"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:ellipsize="end"
-        android:shadowColor="#000000"
-        android:shadowRadius="6"
-        android:singleLine="true"
-        android:textColor="@color/text_dim"
-        android:textSize="14sp" />
+    <include layout="@layout/include_info" />
 
     <TextView
         android:id="@+id/notice"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="4dp"
         android:background="@drawable/bg_notice"
         android:padding="12dp"
         android:textColor="@color/text"
@@ -110,4 +73,10 @@
                 android:text="Favoritos" />
         </LinearLayout>
     </LinearLayout>
+
+    <include
+        layout="@layout/include_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp" />
 </LinearLayout>

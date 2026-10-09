@@ -35,6 +35,10 @@
             android:windowSoftInputMode="stateHidden" />
         <activity android:name=".EpisodesActivity" />
         <activity
+            android:name=".SearchActivity"
+            android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".SettingsActivity" />
+        <activity
             android:name=".PlayerActivity"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
             android:screenOrientation="sensorLandscape"

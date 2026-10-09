@@ -94,6 +94,7 @@ class LoginActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val (config, result) = withContext(Dispatchers.IO) {
                 val config = RemoteConfig.load(this@LoginActivity)
+                Settings.userAgent = config.userAgent
                 // Tenta primeiro o DNS que funcionou da última vez (se ainda estiver na lista)
                 val servers = (listOfNotNull(lastServer?.takeIf { it in config.dns }) + config.dns).distinct()
                 config to loginWithServers(user, pass, servers)
@@ -102,6 +103,7 @@ class LoginActivity : AppCompatActivity() {
             val account = result.account
             if (account != null) {
                 prefs.saveAccount(account)
+                Settings.expDate = result.expDate
                 Repository.init(account)
                 goToMain(config.notice)
             } else {

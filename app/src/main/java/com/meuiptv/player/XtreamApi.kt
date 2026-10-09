@@ -22,6 +22,10 @@ class XtreamApi(private val account: Account) {
         return Http.get(url)
     }
 
+    /** Vencimento informado pelo painel no último login (segundos; 0 = sem data). */
+    var expDate: Long = 0L
+        private set
+
     /** Retorna null se o login deu certo, ou a mensagem de erro. */
     fun login(): String? {
         val o = try {
@@ -34,6 +38,7 @@ class XtreamApi(private val account: Account) {
         if (info.optInt("auth", 0) != 1) return "Usuário ou senha incorretos."
         val status = info.str("status").ifBlank { "Active" }
         if (!status.equals("Active", ignoreCase = true)) return "Sua conta está com status: $status"
+        expDate = info.str("exp_date").toLongOrNull() ?: 0L
         return null
     }
 
@@ -123,7 +128,7 @@ class XtreamApi(private val account: Account) {
         return lines.joinToString("\n")
     }
 
-    private fun liveUrl(id: String) = "$base/live/$user/$pass/$id.ts"
+    private fun liveUrl(id: String) = "$base/live/$user/$pass/$id.${Settings.liveExtension}"
 
     private fun enc(s: String) = URLEncoder.encode(s, "UTF-8")
 

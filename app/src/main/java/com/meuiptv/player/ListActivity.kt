@@ -122,8 +122,16 @@ class ListActivity : AppCompatActivity() {
         }
     }
 
+    /** Nome das categorias, com cadeado nas adultas quando o controle dos pais está ativo. */
+    private fun categoryLabels(): List<String> = categories.map {
+        if (kind != Kind.FAV && adultLocked() && isAdult(it.name)) "🔒 ${it.name}" else it.name
+    }
+
+    private fun isLockedCategory(index: Int): Boolean =
+        kind != Kind.FAV && adultLocked() && isAdult(categories[index].name)
+
     private fun showCategories(keepCategoryId: String? = null) {
-        catAdapter.labels = categories.map { it.name }
+        catAdapter.labels = categoryLabels()
         if (categories.isEmpty()) {
             setLoading(false)
             showMessage("Nenhuma categoria encontrada.")
@@ -131,10 +139,11 @@ class ListActivity : AppCompatActivity() {
         }
         // Começa na primeira categoria real (a posição 0 é "Todos", que pode ser enorme)
         val kept = categories.indexOfFirst { it.id == keepCategoryId }
+        val firstFree = (1 until categories.size).firstOrNull { !isLockedCategory(it) }
         selectCategory(
             when {
-                kept >= 0 -> kept
-                kind != Kind.FAV && categories.size > 1 -> 1
+                kept >= 0 && !isLockedCategory(kept) -> kept
+                kind != Kind.FAV && firstFree != null -> firstFree
                 else -> 0
             }
         )
@@ -142,6 +151,15 @@ class ListActivity : AppCompatActivity() {
 
     private fun selectCategory(index: Int) {
         if (index !in categories.indices) return
+        // Controle dos pais: categoria adulta pede a senha
+        if (isLockedCategory(index)) {
+            checkPin {
+                Session.adultUnlocked = true
+                catAdapter.labels = categoryLabels()
+                selectCategory(index)
+            }
+            return
+        }
         currentCat = index
         catAdapter.selected = index
         val category = categories[index]
@@ -154,7 +172,16 @@ class ListActivity : AppCompatActivity() {
         setLoading(true)
         loadJob = lifecycleScope.launch {
             try {
-                val list = withContext(Dispatchers.IO) { Repository.items(kind, category.id) }
+                val list = withContext(Dispatchers.IO) {
+                    val all = Repository.items(kind, category.id)
+                    // No "Todos", esconde o conteúdo adulto enquanto estiver trancado
+                    if (category.id == Kind.ALL && adultLocked()) {
+                        val adult = Repository.adultCategoryIds(kind)
+                        all.filterNot { it.categoryId in adult }
+                    } else {
+                        all
+                    }
+                }
                 setItems(list)
             } catch (e: CancellationException) {
                 throw e

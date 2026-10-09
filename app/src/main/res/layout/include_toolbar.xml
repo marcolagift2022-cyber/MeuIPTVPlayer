@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Barra de botões pequenos do menu: Buscar · Ajustes · Atualizar · Sair -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+
+    <Button
+        android:id="@+id/btn_search"
+        style="@style/ToolButton"
+        android:drawableTop="@drawable/ic_search"
+        android:text="Buscar" />
+
+    <Button
+        android:id="@+id/btn_settings"
+        style="@style/ToolButton"
+        android:drawableTop="@drawable/ic_settings"
+        android:text="Ajustes" />
+
+    <Button
+        android:id="@+id/btn_refresh"
+        style="@style/ToolButton"
+        android:drawableTop="@drawable/ic_refresh"
+        android:text="Atualizar" />
+
+    <Button
+        android:id="@+id/logout"
+        style="@style/ToolButton"
+        android:drawableTop="@drawable/ic_logout"
+        android:text="Sair" />
+</LinearLayout>

@@ -8,7 +8,10 @@ import java.net.URL
 /** Downloads simples de texto (API do Xtream e listas M3U). */
 object Http {
 
-    const val USER_AGENT = "MeuIPTVPlayer/1.0 (Linux; Android)"
+    private const val DEFAULT_USER_AGENT = "MeuIPTVPlayer/1.0 (Linux; Android)"
+
+    /** Pode ser trocado pelo campo "user_agent" do config.json. */
+    val userAgent: String get() = Settings.userAgent.ifBlank { DEFAULT_USER_AGENT }
 
     private fun open(address: String): HttpURLConnection {
         var url = address
@@ -18,7 +21,7 @@ object Http {
             conn.connectTimeout = 15_000
             conn.readTimeout = 60_000
             conn.instanceFollowRedirects = false
-            conn.setRequestProperty("User-Agent", USER_AGENT)
+            conn.setRequestProperty("User-Agent", userAgent)
             val code = conn.responseCode
             if (code in 300..399) {
                 val location = conn.getHeaderField("Location")

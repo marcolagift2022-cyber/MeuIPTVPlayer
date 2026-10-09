@@ -30,6 +30,69 @@
         <item name="android:drawablePadding">6dp</item>
     </style>
 
+    <!-- Botões pequenos com ícone (Buscar, Ajustes, Atualizar, Sair) -->
+    <style name="ToolButton" parent="Widget.AppCompat.Button">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">68dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_margin">4dp</item>
+        <item name="android:background">@drawable/bg_focus</item>
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:paddingBottom">6dp</item>
+        <item name="android:drawablePadding">2dp</item>
+        <item name="android:textColor">@color/text</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+    <!-- Tela de Configurações -->
+    <style name="SettingsCard">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">14dp</item>
+        <item name="android:background">@drawable/bg_card</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:padding">16dp</item>
+    </style>
+
+    <style name="SettingsTitle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/accent</item>
+        <item name="android:textSize">17sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:layout_marginBottom">6dp</item>
+    </style>
+
+    <style name="SettingsHint">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/text_dim</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:layout_marginStart">8dp</item>
+        <item name="android:layout_marginTop">2dp</item>
+    </style>
+
+    <style name="SettingsOption">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/bg_row</item>
+        <item name="android:padding">10dp</item>
+        <item name="android:textColor">@color/text</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="SettingsButton" parent="Widget.AppCompat.Button">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">46dp</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:background">@drawable/bg_focus</item>
+        <item name="android:paddingStart">20dp</item>
+        <item name="android:paddingEnd">20dp</item>
+        <item name="android:textColor">@color/text</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
     <style name="Input">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
