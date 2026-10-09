@@ -29,16 +29,18 @@ jobs:
       - name: Tirar as capturas
         run: |
           cd tv/tools
-          CHROME_PATH=$(which google-chrome) node screenshots.js $GITHUB_WORKSPACE/screens
-          ls -la $GITHUB_WORKSPACE/screens
+          set -o pipefail
+          CHROME_PATH=$(which google-chrome) node screenshots.js $GITHUB_WORKSPACE/screens 2>&1 | tee $GITHUB_WORKSPACE/log.txt || true
+          ls -la $GITHUB_WORKSPACE/screens || true
 
       - name: Publicar
+        if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cd screens && zip -q ../Capturas-TV.zip *.png && cd ..
+          mkdir -p screens
+          (cd screens && zip -q ../Capturas-TV.zip *.png) || true
+          { echo "Capturas 1920x1080 do app de TV usando a lista de demonstração (sem conteúdo real)."; echo; echo '```'; tail -n 40 log.txt 2>/dev/null; echo '```'; } > notes.md
           gh release delete tv-capturas --yes --cleanup-tag 2>/dev/null || true
-          gh release create tv-capturas screens/*.png Capturas-TV.zip \
-            --title "Capturas de tela - TV (para a loja)" \
-            --notes "Capturas 1920x1080 do app de TV usando a lista de demonstração (sem conteúdo real)." \
-            --latest=false
+          FILES=$(ls screens/*.png Capturas-TV.zip 2>/dev/null || true)
+          gh release create tv-capturas $FILES --title "Capturas de tela - TV (para a loja)" --notes-file notes.md --latest=false

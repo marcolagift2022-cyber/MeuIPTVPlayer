@@ -10,6 +10,10 @@ const out = path.resolve(process.argv[2] || 'screens');
 fs.mkdirSync(out, { recursive: true });
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+async function scene(name, fn) {
+  try { await fn(); console.log('OK', name); }
+  catch (e) { console.log('FALHOU', name, '-', (e && e.message || e).toString().split('\n')[0]); }
+}
 
 (async () => {
   const browser = await puppeteer.launch({
@@ -23,6 +27,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   page.on('pageerror', (e) => console.log('[erro]', e.message));
 
   // 1) Login (aba Lista M3U com o link de demonstração)
+  await scene('1-login', async () => {
   await page.goto(page_url);
   await page.evaluate(() => localStorage.clear());
   await page.reload();
@@ -32,24 +37,30 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   await page.focus('#btn-login');
   await sleep(500);
   await page.screenshot({ path: path.join(out, '1-login.png') });
+  });
 
   // 2) Menu
+  await scene('2-menu', async () => {
   await page.click('#btn-login');
   await page.waitForSelector('#screen-home:not(.hidden)', { timeout: 30000 });
   await sleep(1000);
   await page.focus('#tile-live');
   await sleep(300);
   await page.screenshot({ path: path.join(out, '2-menu.png') });
+  });
 
   // 3) Filmes (categorias + grade)
+  await scene('3-filmes', async () => {
   await page.click('#tile-movie');
   await page.waitForSelector('#grid .card', { timeout: 30000 });
   await sleep(1500);
   await page.focus('#grid .card');
   await sleep(400);
   await page.screenshot({ path: path.join(out, '3-filmes.png') });
+  });
 
   // 4) TV ao vivo
+  await scene('4-ao-vivo', async () => {
   await page.keyboard.press('Escape');
   await sleep(600);
   await page.click('#tile-live');
@@ -58,8 +69,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   await page.focus('#grid .card');
   await sleep(400);
   await page.screenshot({ path: path.join(out, '4-ao-vivo.png') });
+  });
 
   // 5) Busca
+  await scene('5-busca', async () => {
   await page.keyboard.press('Escape');
   await sleep(600);
   await page.click('#btn-search');
@@ -67,8 +80,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   await page.type('#search-input', 'Bunny');
   await sleep(1500);
   await page.screenshot({ path: path.join(out, '5-busca.png') });
+  });
 
   // 6) Player (Big Buck Bunny, com as informações na tela)
+  await scene('6-player', async () => {
   await page.keyboard.press('Escape');
   await sleep(600);
   await page.click('#tile-movie');
@@ -79,6 +94,17 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   await page.keyboard.press('ArrowRight');
   await sleep(1200);
   await page.screenshot({ path: path.join(out, '6-player.png') });
+  });
+
+  // Estado final da tela (ajuda a investigar falhas)
+  await scene('debug', async () => {
+    const info = await page.evaluate(() => ({
+      telas: Array.prototype.map.call(document.querySelectorAll('.screen'), (s) => s.id + (s.className.indexOf('hidden') >= 0 ? ':oculta' : ':VISIVEL')).join(' '),
+      erroLogin: (document.getElementById('login-error') || {}).textContent,
+      msgLista: (document.getElementById('list-msg') || {}).textContent,
+    }));
+    console.log('ESTADO', JSON.stringify(info));
+  });
 
   await browser.close();
   console.log('Capturas salvas em', out, fs.readdirSync(out));
