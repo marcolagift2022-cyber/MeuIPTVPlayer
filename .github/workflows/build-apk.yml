@@ -7,6 +7,7 @@ on:
       - "config.json"
       - "**.md"
       - "tv/**"
+      - "loja/**"
       - ".github/workflows/build-tv.yml"
   workflow_dispatch:
 

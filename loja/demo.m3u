@@ -1,0 +1,11 @@
+#EXTM3U
+#EXTINF:-1 tvg-name="Demo HLS 1" group-title="Demo - Ao vivo",Demo HLS 1 (Big Buck Bunny)
+https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8
+#EXTINF:-1 tvg-name="Demo HLS 2" group-title="Demo - Ao vivo",Demo HLS 2 (Apple BipBop)
+https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8
+#EXTINF:-1 group-title="Demo - Filmes",Big Buck Bunny
+https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4
+#EXTINF:-1 group-title="Demo - Filmes",Elephants Dream
+https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4
+#EXTINF:-1 group-title="Demo - Filmes",Sintel
+https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4
