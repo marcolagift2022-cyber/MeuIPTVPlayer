@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Player em tela cheia -->
+<component name="PlayerView" extends="Group">
+  <interface>
+    <field id="params" type="assocarray" onChange="onParams" />
+    <field id="focusMe" type="boolean" alwaysNotify="true" onChange="doFocus" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/components/util.brs" />
+  <script type="text/brightscript" uri="pkg:/components/PlayerView.brs" />
+  <children>
+    <Rectangle width="1920" height="1080" color="0x000000FF" />
+    <Video id="video" width="1920" height="1080" translation="[0,0]" />
+    <Group id="osd" visible="false">
+      <Rectangle width="1920" height="230" color="0x000000B4" />
+      <Label id="name" translation="[70,40]" width="1780" font="font:LargeBoldSystemFont" color="0xFFFFFFFF" />
+      <Label id="epg" translation="[70,110]" width="1780" height="100" wrap="true" color="0xC8D2CCFF" />
+      <Label id="keys" translation="[1150,48]" width="700" horizAlign="right" font="font:SmallestSystemFont" color="0xA9B5ACFF" />
+    </Group>
+    <Label id="err" translation="[160,470]" width="1600" horizAlign="center" wrap="true" visible="false" color="0xFF8A8AFF" />
+    <Timer id="osdTimer" duration="5" repeat="false" />
+  </children>
+</component>

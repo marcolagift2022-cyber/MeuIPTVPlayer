@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tela de entrada: Xtream Codes (servidor, usuário, senha) ou link de lista M3U -->
+<component name="LoginView" extends="Group">
+  <interface>
+    <field id="params" type="assocarray" onChange="onParams" />
+    <field id="focusMe" type="boolean" alwaysNotify="true" onChange="doFocus" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/components/util.brs" />
+  <script type="text/brightscript" uri="pkg:/components/LoginView.brs" />
+  <children>
+    <Poster id="logo" uri="pkg:/images/logo.png" width="540" height="396" translation="[150,230]" />
+    <Label id="tagline" translation="[150,660]" width="540" horizAlign="center" wrap="true" color="0xA9B5ACFF"
+      text="Reprodutor de mídia. Use a conta ou a lista do seu próprio provedor." />
+    <Label id="title" translation="[880,190]" text="Entrar" font="font:LargeBoldSystemFont" color="0xF2F4F7FF" />
+    <LabelList id="form" translation="[880,290]" itemSize="[900,80]" itemSpacing="[0,14]" numRows="6"
+      vertFocusAnimationStyle="floatingFocus" color="0xF2F4F7FF" focusedColor="0x0A0F0BFF"
+      focusBitmapUri="pkg:/images/focus_fill.9.png" />
+    <Label id="msg" translation="[880,880]" width="900" wrap="true" color="0xFF6B6BFF" />
+  </children>
+</component>

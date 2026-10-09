@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Episódios de uma série (Xtream Codes) -->
+<component name="EpisodesView" extends="Group">
+  <interface>
+    <field id="params" type="assocarray" onChange="onParams" />
+    <field id="focusMe" type="boolean" alwaysNotify="true" onChange="doFocus" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/components/util.brs" />
+  <script type="text/brightscript" uri="pkg:/components/EpisodesView.brs" />
+  <children>
+    <Label id="title" translation="[70,60]" width="1780" font="font:LargeBoldSystemFont" color="0xF2F4F7FF" />
+    <Poster id="cover" translation="[70,170]" width="320" height="480" loadWidth="320" loadHeight="480"
+      loadDisplayMode="scaleToFit" failedBitmapUri="pkg:/images/placeholder.png" />
+    <Label id="plot" translation="[70,670]" width="320" height="330" wrap="true" font="font:SmallestSystemFont" color="0xA9B5ACFF" />
+    <LabelList id="list" translation="[450,170]" itemSize="[1400,66]" numRows="12" vertFocusAnimationStyle="floatingFocus"
+      color="0xF2F4F7FF" focusedColor="0x0A0F0BFF" focusBitmapUri="pkg:/images/focus_fill.9.png" />
+    <Label id="msg" translation="[450,400]" width="1400" horizAlign="center" wrap="true" color="0xA9B5ACFF" />
+  </children>
+</component>

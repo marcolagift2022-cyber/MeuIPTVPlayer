@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Busca em canais, filmes e séries -->
+<component name="SearchView" extends="Group">
+  <interface>
+    <field id="params" type="assocarray" onChange="onParams" />
+    <field id="focusMe" type="boolean" alwaysNotify="true" onChange="doFocus" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/components/util.brs" />
+  <script type="text/brightscript" uri="pkg:/components/SearchView.brs" />
+  <children>
+    <Label id="title" translation="[70,60]" text="Buscar" font="font:LargeBoldSystemFont" color="0xF2F4F7FF" />
+    <Button id="btn" translation="[70,150]" text="Digitar o que procura" minWidth="560" iconUri="" focusedIconUri="" />
+    <Label id="query" translation="[680,165]" width="1170" color="0xA9B5ACFF" />
+    <MarkupGrid id="grid" translation="[70,280]" itemComponentName="GridItem" itemSize="[230,340]" itemSpacing="[22,26]"
+      numColumns="7" numRows="2" drawFocusFeedbackOnTop="true" focusBitmapUri="pkg:/images/focus.9.png"
+      vertFocusAnimationStyle="floatingFocus" />
+    <Label id="msg" translation="[70,500]" width="1780" horizAlign="center" wrap="true" color="0xA9B5ACFF" />
+    <Label id="hint" translation="[70,1020]" width="1780" color="0xA9B5ACFF" font="font:SmallestSystemFont"
+      text="OK: abrir     ✱ (asterisco): favoritar     ▲: nova busca     Voltar: menu" />
+  </children>
+</component>

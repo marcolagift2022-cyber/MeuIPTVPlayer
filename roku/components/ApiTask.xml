@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tarefa em segundo plano: conversa com o servidor (Xtream Codes ou lista M3U) -->
+<component name="ApiTask" extends="Task">
+  <interface>
+    <field id="request" type="assocarray" />
+    <field id="content" type="node" />
+    <field id="result" type="assocarray" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/components/util.brs" />
+  <script type="text/brightscript" uri="pkg:/components/ApiTask.brs" />
+</component>

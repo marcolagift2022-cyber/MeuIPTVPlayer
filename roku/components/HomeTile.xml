@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Botão grande do menu principal -->
+<component name="HomeTile" extends="Group">
+  <interface>
+    <field id="itemContent" type="node" onChange="onContent" />
+    <field id="width" type="float" onChange="layout" />
+    <field id="height" type="float" onChange="layout" />
+    <field id="focusPercent" type="float" onChange="onFocus" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/components/HomeTile.brs" />
+  <children>
+    <Rectangle id="bg" color="0x141A17E6" />
+    <Label id="title" horizAlign="center" vertAlign="center" font="font:LargeBoldSystemFont" color="0xF2F4F7FF" />
+    <Label id="sub" horizAlign="center" vertAlign="center" font="font:SmallSystemFont" color="0xA9B5ACFF" />
+  </children>
+</component>

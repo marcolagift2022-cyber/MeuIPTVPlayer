@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Menu principal -->
+<component name="HomeView" extends="Group">
+  <interface>
+    <field id="params" type="assocarray" onChange="onParams" />
+    <field id="focusMe" type="boolean" alwaysNotify="true" onChange="doFocus" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/components/util.brs" />
+  <script type="text/brightscript" uri="pkg:/components/HomeView.brs" />
+  <children>
+    <Poster id="logo" uri="pkg:/images/logo.png" width="300" height="220" translation="[70,40]" />
+    <Label id="clock" translation="[1250,60]" width="600" horizAlign="right" font="font:LargeBoldSystemFont" color="0xF2F4F7FF" />
+    <Label id="exp" translation="[1050,130]" width="800" horizAlign="right" color="0xA9B5ACFF" />
+    <MarkupGrid id="menu" translation="[155,360]" itemComponentName="HomeTile" itemSize="[380,220]" itemSpacing="[30,30]"
+      numColumns="4" numRows="2" drawFocusFeedbackOnTop="true" focusBitmapUri="pkg:/images/focus.9.png"
+      vertFocusAnimationStyle="floatingFocus" />
+    <Label id="hint" translation="[70,1000]" width="1780" color="0xA9B5ACFF" font="font:SmallSystemFont"
+      text="Este aplicativo não fornece canais nem conteúdo. Use a conta ou a lista do seu provedor." />
+    <Timer id="clockTimer" duration="15" repeat="true" />
+  </children>
+</component>

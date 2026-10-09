@@ -8,6 +8,8 @@ on:
       - "**.md"
       - "tv/**"
       - "loja/**"
+      - "roku/**"
+      - ".github/workflows/build-roku.yml"
       - ".github/workflows/build-tv.yml"
   workflow_dispatch:
 

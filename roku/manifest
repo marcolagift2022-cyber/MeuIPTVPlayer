@@ -1,0 +1,15 @@
+title=X BR TOP CINE
+subtitle=Reprodutor de listas IPTV (Xtream Codes e M3U)
+major_version=1
+minor_version=0
+build_version=1
+mm_icon_focus_fhd=pkg:/images/icon_fhd.png
+mm_icon_focus_hd=pkg:/images/icon_hd.png
+mm_icon_focus_sd=pkg:/images/icon_sd.png
+splash_screen_fhd=pkg:/images/splash_fhd.jpg
+splash_screen_hd=pkg:/images/splash_hd.jpg
+splash_screen_sd=pkg:/images/splash_sd.jpg
+splash_color=#0A0F0B
+splash_min_time=1200
+ui_resolutions=fhd
+rsg_version=1.2

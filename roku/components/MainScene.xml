@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Cena principal: guarda a pilha de telas e trata o botão Voltar -->
+<component name="MainScene" extends="Scene">
+  <interface>
+    <field id="exitApp" type="boolean" />
+    <function name="navigate" />
+    <function name="goBack" />
+    <function name="resetTo" />
+    <function name="showToast" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/components/util.brs" />
+  <script type="text/brightscript" uri="pkg:/components/MainScene.brs" />
+  <children>
+    <Poster id="bg" uri="pkg:/images/bg.jpg" width="1920" height="1080" />
+    <Group id="views" />
+    <Group id="toastGroup" visible="false" translation="[460,930]">
+      <Rectangle width="1000" height="80" color="0x1E7A35F0" />
+      <Label id="toast" width="1000" height="80" horizAlign="center" vertAlign="center" color="0xFFFFFFFF" font="font:MediumBoldSystemFont" />
+    </Group>
+    <Timer id="toastTimer" duration="2.5" repeat="false" />
+  </children>
+</component>

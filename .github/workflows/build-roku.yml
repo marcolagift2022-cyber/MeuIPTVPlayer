@@ -1,0 +1,58 @@
+name: Gerar app da Roku
+
+on:
+  push:
+    paths:
+      - "roku/**"
+      - ".github/workflows/build-roku.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # Confere o código BrightScript (erros de digitação, funções que não existem etc.)
+      - name: Conferir o código
+        run: |
+          cd roku
+          set +e
+          npx -y -p brighterscript@0.65 bsc --project bsconfig.json > ../bsc.log 2>&1
+          echo "BSC_CODE=$?" >> $GITHUB_ENV
+          cat ../bsc.log
+
+      - name: Empacotar (.zip para a Roku)
+        run: |
+          VERSION_BUILD=${{ github.run_number }}
+          echo "VERSION=1.0.$VERSION_BUILD" >> $GITHUB_ENV
+          mkdir -p build out
+          cp -r roku/manifest roku/source roku/components roku/images build/
+          sed -i "s/^build_version=.*/build_version=$VERSION_BUILD/" build/manifest
+          (cd build && zip -qr "$GITHUB_WORKSPACE/out/XBRTopCine-Roku-1.0.$VERSION_BUILD.zip" .)
+          unzip -l out/*.zip | tail -3
+          ls -la out
+
+      - name: Publicar
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$BSC_CODE" != "0" ]; then
+            { echo "O código da Roku tem erros:"; echo; echo '```'; tail -n 60 bsc.log; echo '```'; } > notes.md
+            gh release delete roku-erros --yes --cleanup-tag 2>/dev/null || true
+            gh release create roku-erros --title "Roku: erros no código" --notes-file notes.md --latest=false
+            exit 1
+          fi
+          gh release delete roku-erros --yes --cleanup-tag 2>/dev/null || true
+          { echo "Versão Roku. Instale pelo modo desenvolvedor (veja roku/LEIA-ME-ROKU.md) ou envie no painel developer.roku.com."; echo; echo '```'; tail -n 30 bsc.log; echo '```'; } > notes.md
+          gh release create "roku-v$VERSION" out/* \
+            --title "Roku $VERSION" \
+            --notes-file notes.md \
+            --latest=false
