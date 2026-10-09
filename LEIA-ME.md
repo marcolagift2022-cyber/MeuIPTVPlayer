@@ -74,6 +74,22 @@ Os clientes só digitam usuário e senha.
 - `"user_agent"`: deixe `""`. Só preencha se o painel exigir um user-agent específico (ex.: `"IPTVSmartersPlayer"`).
 - Cuidado com as aspas e vírgulas: entre um DNS e outro vai vírgula, depois do último não.
 
+## Avisar os clientes sobre uma versão nova
+
+Cada APK gerado no GitHub tem um número (ex.: release **v1.0.15** = versão **15**).
+Quando quiser que os clientes atualizem, edite o **config.json** e coloque esse número em `"versao"`:
+
+```json
+  "versao": 15,
+  "mensagem_atualizacao": "Nova versão com busca melhorada!",
+  "atualizacao_obrigatoria": false
+```
+
+- Ao abrir o app, quem tem versão menor vê o aviso **"Nova versão disponível!"** e o app baixa e instala sozinho.
+- `"atualizacao_obrigatoria": true` tira o botão "Depois" (o cliente precisa atualizar para continuar).
+- `"mensagem_atualizacao"` é opcional (texto do aviso).
+- Na primeira atualização o Android pede para permitir "instalar apps desconhecidos" para o X BR TOP CINE — é só aceitar.
+
 ## Personalizar
 
 | O que mudar | Onde |

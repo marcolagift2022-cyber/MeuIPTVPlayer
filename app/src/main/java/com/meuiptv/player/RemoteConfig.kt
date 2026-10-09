@@ -17,7 +17,27 @@ object RemoteConfig {
     /** Usado só se o app nunca conseguiu baixar a configuração. */
     private val DEFAULT_DNS = listOf("http://xbrtoprev.site")
 
-    data class Config(val dns: List<String>, val notice: String, val userAgent: String = "")
+    /** Link fixo do APK mais novo (GitHub Releases). */
+    const val DEFAULT_APK_URL =
+        "https://github.com/marcolagift2022-cyber/MeuIPTVPlayer/releases/latest/download/MeuIPTVPlayer.apk"
+
+    data class Config(
+        val dns: List<String>,
+        val notice: String,
+        val userAgent: String = "",
+        /** Número da versão mais nova ("versao" no config.json). 0 = não avisar. */
+        val latestVersion: Long = 0L,
+        val apkUrl: String = DEFAULT_APK_URL,
+        val updateMessage: String = "",
+        val updateRequired: Boolean = false,
+    )
+
+    /** Última configuração baixada (sem usar a internet). */
+    fun cached(context: Context): Config? {
+        val sp = context.getSharedPreferences("meu_iptv", Context.MODE_PRIVATE)
+        val text = sp.getString("remote_config", null) ?: return null
+        return runCatching { parse(text) }.getOrNull()
+    }
 
     /** Baixa a configuração. Sem internet, usa a última que funcionou. Chame fora da thread principal. */
     fun load(context: Context): Config {
@@ -50,6 +70,10 @@ object RemoteConfig {
             dns = list,
             notice = if (o.isNull("aviso")) "" else o.optString("aviso").trim(),
             userAgent = if (o.isNull("user_agent")) "" else o.optString("user_agent").trim(),
+            latestVersion = o.optLong("versao", 0L),
+            apkUrl = o.optString("apk_url").trim().ifEmpty { DEFAULT_APK_URL },
+            updateMessage = if (o.isNull("mensagem_atualizacao")) "" else o.optString("mensagem_atualizacao").trim(),
+            updateRequired = o.optBoolean("atualizacao_obrigatoria", false),
         )
     }
 }

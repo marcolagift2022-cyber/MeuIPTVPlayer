@@ -54,6 +54,35 @@ object Http {
         }
     }
 
+    /** Baixa um arquivo grande (ex.: APK da atualização), avisando o progresso de 0 a 100 (-1 = sem tamanho). */
+    fun download(url: String, target: java.io.File, onProgress: (Int) -> Unit) {
+        val conn = open(url)
+        try {
+            val total = conn.contentLength.toLong()
+            target.parentFile?.mkdirs()
+            conn.inputStream.use { input ->
+                target.outputStream().use { output ->
+                    val buffer = ByteArray(64 * 1024)
+                    var done = 0L
+                    var last = -2
+                    while (true) {
+                        val n = input.read(buffer)
+                        if (n < 0) break
+                        output.write(buffer, 0, n)
+                        done += n
+                        val pct = if (total > 0) ((done * 100) / total).toInt() else -1
+                        if (pct != last) {
+                            last = pct
+                            onProgress(pct)
+                        }
+                    }
+                }
+            }
+        } finally {
+            conn.disconnect()
+        }
+    }
+
     fun <T> read(url: String, block: (BufferedReader) -> T): T {
         val conn = open(url)
         try {

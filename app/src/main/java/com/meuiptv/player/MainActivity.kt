@@ -70,6 +70,14 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.logout).setOnClickListener { confirmLogout() }
 
         live.requestFocus() // foco inicial para quem usa controle remoto
+
+        // Versão nova no config.json? Mostra o aviso de atualização
+        Updater.checkAndPrompt(this)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Updater.resumePending(this) // voltando da tela de permissão de instalação
     }
 
     override fun onStart() {

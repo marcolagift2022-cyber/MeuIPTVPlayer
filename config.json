@@ -4,5 +4,8 @@
     "http://seguradev02.site"
   ],
   "aviso": "",
-  "user_agent": ""
+  "user_agent": "",
+  "versao": 0,
+  "atualizacao_obrigatoria": false,
+  "mensagem_atualizacao": ""
 }
