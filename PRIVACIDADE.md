@@ -15,7 +15,7 @@ O **X BR TOP CINE** é um aplicativo **reprodutor de mídia**. Ele não fornece,
 - Não enviamos dados do usuário para nós nem para terceiros.
 
 ## Configuração do aplicativo
-A versão Android pode consultar um arquivo público de configuração (sem dados pessoais) para avisos e atualizações do aplicativo.
+A versão Android distribuída fora da Google Play pode consultar um arquivo público de configuração (sem dados pessoais) para avisos e atualizações do aplicativo. A versão da Google Play não faz essa consulta e é atualizada somente pela própria loja.
 
 ## Exclusão dos dados
 Para apagar todos os dados, use o botão **Sair** no aplicativo ou desinstale-o.
