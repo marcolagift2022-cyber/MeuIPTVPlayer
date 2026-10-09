@@ -2,10 +2,10 @@
 ' m.top.content (lista de itens, quando houver) e m.top.result = { ok, error, ... }.
 
 sub init()
-    m.top.functionName = "run"
+    m.top.functionName = "runTask"
 end sub
 
-sub run()
+sub runTask()
     req = m.top.request
     acc = m.global.account
     kind = ToS(req.kind)
