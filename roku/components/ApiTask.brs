@@ -27,21 +27,20 @@ sub runTask()
 end sub
 
 ' ---------------------------------------------------------------- HTTP
-function httpGet(url as string) as object
+function httpGet(url as string, timeoutMs = 30000 as integer) as object
     xfer = CreateObject("roUrlTransfer")
     port = CreateObject("roMessagePort")
     xfer.SetMessagePort(port)
     xfer.SetUrl(url)
-    if LCase(Left(url, 6)) = "https:" then
-        xfer.SetCertificatesFile("common:/certs/ca-bundle.crt")
-        xfer.InitClientCertificates()
-    end if
+    ' Certificados sempre, porque um endereço http:// pode redirecionar para https://
+    xfer.SetCertificatesFile("common:/certs/ca-bundle.crt")
+    xfer.InitClientCertificates()
     xfer.EnableEncodings(true)
     xfer.RetainBodyOnError(true)
     if not xfer.AsyncGetToString() then
         return { ok: false, error: "Não foi possível conectar ao servidor." }
     end if
-    msg = wait(30000, port)
+    msg = wait(timeoutMs, port)
     if msg = invalid then
         xfer.AsyncCancel()
         return { ok: false, error: "O servidor demorou demais para responder." }
@@ -59,8 +58,8 @@ function httpGet(url as string) as object
     return { ok: false, error: "O servidor respondeu com erro " + code.ToStr() + "." }
 end function
 
-function httpJson(url as string) as object
-    r = httpGet(url)
+function httpJson(url as string, timeoutMs = 30000 as integer) as object
+    r = httpGet(url, timeoutMs)
     if not r.ok then return r
     data = ParseJson(r.body)
     if data = invalid then
@@ -87,17 +86,27 @@ function cacheGet(key as string) as dynamic
     return invalid
 end function
 
-sub cacheSet(key as string, node as object)
+sub cacheSet(key as string, value as object)
     c = m.global.cache
     if c = invalid then return
     if c.hasField(key) then
-        c.setField(key, node)
+        c.setField(key, value)
     else
         f = {}
-        f[key] = node
+        f[key] = value
         c.addFields(f)
     end if
 end sub
+
+' Itens das listas ficam como arrays de { t: nome, i: imagem, u: endereço, k: tipo, s: id, c: categoria }
+' e só viram ContentNode na hora de mostrar.
+function nodesFrom(arr as object) as object
+    out = CreateObject("roSGNode", "ContentNode")
+    for each o in arr
+        AddItem(out, o.t, o.i, o.u, o.k, o.s, o.c)
+    end for
+    return out
+end function
 
 ' ---------------------------------------------------------------- login
 function doLogin(a as object) as object
@@ -126,20 +135,21 @@ end function
 
 ' ---------------------------------------------------------------- lista M3U
 function m3uRoot(acc as object) as object
-    root = cacheGet("m3u")
-    if root <> invalid then return { ok: true, root: root }
-    r = httpGet(ToS(acc.m3u))
+    items = cacheGet("m3u")
+    if items <> invalid then return { ok: true, items: items }
+    r = httpGet(ToS(acc.m3u), 120000)
     if not r.ok then return r
-    root = parseM3u(r.body)
-    if root.getChildCount() = 0 then
+    items = parseM3u(r.body)
+    r = invalid
+    if items.Count() = 0 then
         return { ok: false, error: "A lista não tem nenhum canal ou vídeo." }
     end if
-    cacheSet("m3u", root)
-    return { ok: true, root: root }
+    cacheSet("m3u", items)
+    return { ok: true, items: items }
 end function
 
 function parseM3u(text as string) as object
-    root = CreateObject("roSGNode", "ContentNode")
+    items = []
     q = Chr(34)
     reLogo = CreateObject("roRegex", "tvg-logo=" + q + "([^" + q + "]*)" + q, "i")
     reGroup = CreateObject("roRegex", "group-title=" + q + "([^" + q + "]*)" + q, "i")
@@ -171,11 +181,11 @@ function parseM3u(text as string) as object
             end if
             hasName = true
         else if Left(l, 1) <> "#" and hasName then
-            AddItem(root, name, logo, l, kindOf(l), l, group)
+            items.Push({ t: name, i: logo, u: l, k: kindOf(l), s: l, c: group })
             hasName = false
         end if
     end for
-    return root
+    return items
 end function
 
 ' Nome do item: o texto depois da primeira vírgula que não está entre aspas
@@ -220,9 +230,9 @@ function doCats(acc as object, typ as string) as object
         if not r.ok then return r
         seen = {}
         seen.SetModeCaseSensitive()
-        for each n in r.root.getChildren(-1, 0)
-            g = n.description
-            if n.shortdescriptionline1 = typ and not seen.DoesExist(g) then
+        for each o in r.items
+            g = o.c
+            if o.k = typ and not seen.DoesExist(g) then
                 seen[g] = true
                 c = out.createChild("ContentNode")
                 c.title = g
@@ -251,31 +261,71 @@ end function
 
 ' ---------------------------------------------------------------- itens
 function doItems(acc as object, typ as string, cat as string) as object
-    if ToS(acc.type) = "m3u" then
-        r = m3uRoot(acc)
+    if cat = "all" then
+        r = getList(acc, typ)
         if not r.ok then return r
+        m.top.content = nodesFrom(r.items)
+        return { ok: true }
+    end if
+
+    ' Se a lista completa já está no cache, só filtra; senão pede só a categoria ao servidor
+    full = invalid
+    if ToS(acc.type) = "m3u" then
+        r = getList(acc, typ)
+        if not r.ok then return r
+        full = r.items
+    else
+        full = cacheGet("list_" + typ)
+    end if
+    if full <> invalid then
         out = CreateObject("roSGNode", "ContentNode")
-        for each n in r.root.getChildren(-1, 0)
-            if n.shortdescriptionline1 = typ and (cat = "all" or n.description = cat) then CopyItem(out, n)
+        for each o in full
+            if o.c = cat then AddItem(out, o.t, o.i, o.u, o.k, o.s, o.c)
         end for
         m.top.content = out
         return { ok: true }
     end if
 
-    key = SanitizeKey("it_" + typ + "_" + cat)
-    cached = cacheGet(key)
-    if cached <> invalid then
-        m.top.content = cached
-        return { ok: true }
+    key = SanitizeKey("cat_" + typ + "_" + cat)
+    items = cacheGet(key)
+    if items = invalid then
+        r = fetchList(acc, typ, "&category_id=" + esc(cat))
+        if not r.ok then return r
+        items = r.items
+        cacheSet(key, items)
+    end if
+    m.top.content = nodesFrom(items)
+    return { ok: true }
+end function
+
+' Lista completa de um tipo (live / movie / series), guardada no cache
+function getList(acc as object, typ as string) as object
+    if ToS(acc.type) = "m3u" then
+        r = m3uRoot(acc)
+        if not r.ok then return r
+        items = []
+        for each o in r.items
+            if o.k = typ then items.Push(o)
+        end for
+        return { ok: true, items: items }
     end if
 
+    key = "list_" + typ
+    items = cacheGet(key)
+    if items <> invalid then return { ok: true, items: items }
+    r = fetchList(acc, typ, "")
+    if not r.ok then return r
+    cacheSet(key, r.items)
+    return r
+end function
+
+' Pede ao servidor Xtream os itens de um tipo (todos ou de uma categoria)
+function fetchList(acc as object, typ as string, extra as string) as object
     actions = { live: "get_live_streams", movie: "get_vod_streams", series: "get_series" }
-    extra = ""
-    if cat <> "all" then extra = "&category_id=" + esc(cat)
-    r = httpJson(apiUrl(acc, actions[typ], extra))
+    r = httpJson(apiUrl(acc, actions[typ], extra), 60000)
     if not r.ok then return r
 
-    out = CreateObject("roSGNode", "ContentNode")
+    items = []
     base = ToS(acc.server)
     u = ToS(acc.user)
     p = ToS(acc.pass)
@@ -285,21 +335,19 @@ function doItems(acc as object, typ as string, cat as string) as object
                 if typ = "live" then
                     sid = ToS(o.stream_id)
                     ' A Roku toca canais ao vivo em HLS (.m3u8)
-                    AddItem(out, ToS(o.name), ToS(o.stream_icon), base + "/live/" + u + "/" + p + "/" + sid + ".m3u8", "live", sid, ToS(o.category_id))
+                    items.Push({ t: ToS(o.name), i: ToS(o.stream_icon), u: base + "/live/" + u + "/" + p + "/" + sid + ".m3u8", k: "live", s: sid, c: ToS(o.category_id) })
                 else if typ = "movie" then
                     sid = ToS(o.stream_id)
                     ext = ToS(o.container_extension)
                     if ext = "" then ext = "mp4"
-                    AddItem(out, ToS(o.name), ToS(o.stream_icon), base + "/movie/" + u + "/" + p + "/" + sid + "." + ext, "movie", sid, ToS(o.category_id))
+                    items.Push({ t: ToS(o.name), i: ToS(o.stream_icon), u: base + "/movie/" + u + "/" + p + "/" + sid + "." + ext, k: "movie", s: sid, c: ToS(o.category_id) })
                 else
-                    AddItem(out, ToS(o.name), ToS(o.cover), "", "series", ToS(o.series_id), ToS(o.category_id))
+                    items.Push({ t: ToS(o.name), i: ToS(o.cover), u: "", k: "series", s: ToS(o.series_id), c: ToS(o.category_id) })
                 end if
             end if
         end for
     end if
-    cacheSet(key, out)
-    m.top.content = out
-    return { ok: true }
+    return { ok: true, items: items }
 end function
 
 ' ---------------------------------------------------------------- episódios
@@ -364,11 +412,11 @@ function doSearch(acc as object, query as string) as object
     labels = { live: "TV", movie: "Filme", series: "Série" }
     total = 0
     for each typ in ["live", "movie", "series"]
-        r = doItems(acc, typ, "all")
+        r = getList(acc, typ)
         if r.ok then
-            for each n in m.top.content.getChildren(-1, 0)
-                if Instr(1, LCase(n.title), q) > 0 then
-                    c = CopyItem(out, n)
+            for each o in r.items
+                if Instr(1, LCase(o.t), q) > 0 then
+                    c = AddItem(out, o.t, o.i, o.u, o.k, o.s, o.c)
                     c.secondarytitle = labels[typ]
                     total = total + 1
                     if total >= 300 then exit for
@@ -395,12 +443,23 @@ function doEpg(acc as object, sid as string) as object
                     label = "Agora  "
                     if i > 0 then label = "Depois  "
                     if text <> "" then text = text + Chr(10)
-                    text = text + label + Mid(ToS(e.start), 12, 5) + "  " + fromB64(ToS(e.title))
+                    text = text + label + epgTime(e) + "  " + fromB64(ToS(e.title))
                 end if
             end for
         end if
     end if
     return { ok: true, text: text }
+end function
+
+function epgTime(e as object) as string
+    ts = ToS(e.start_timestamp)
+    if ts <> "" and ts <> "0" then
+        dt = CreateObject("roDateTime")
+        dt.FromSeconds(ts.ToInt())
+        dt.ToLocalTime()
+        return Pad2(dt.GetHours()) + ":" + Pad2(dt.GetMinutes())
+    end if
+    return Mid(ToS(e.start), 12, 5)
 end function
 
 function fromB64(s as string) as string

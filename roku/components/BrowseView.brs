@@ -132,12 +132,12 @@ sub showItems(c as object)
     n = c.getChildCount()
     if n = 0 then
         if m.type = "fav" then
-            m.msg.text = "Nenhum favorito aqui. Na lista, aperte ✱ (asterisco) em um item para favoritar."
+            m.msg.text = "Nenhum favorito aqui. Na lista, aperte * (asterisco) em um item para favoritar."
         else
             m.msg.text = "Nada nesta categoria."
         end if
         m.count.text = ""
-        if m.grid.hasFocus() then
+        if m.grid.hasFocus() and IsActive() then
             m.cats.setFocus(true)
             m.lastFocus = m.cats
         end if
@@ -154,6 +154,7 @@ end sub
 
 sub focusGridIfFilled()
     m.focusGrid = false
+    if not IsActive() then return
     if m.grid.content <> invalid and m.grid.content.getChildCount() > 0 then
         m.grid.setFocus(true)
         m.lastFocus = m.grid
@@ -178,6 +179,17 @@ end sub
 function onKeyEvent(key as string, press as boolean) as boolean
     if not press then return false
     if key = "right" and m.cats.hasFocus() then
+        ' Se a categoria ainda não carregou, carrega agora e entra na grade quando chegar
+        m.catTimer.control = "stop"
+        node = invalid
+        if m.cats.content <> invalid then node = m.cats.content.getChild(m.cats.itemFocused)
+        if node <> invalid then
+            if node.shortdescriptionline2 <> m.curCat then
+                m.focusGrid = true
+                loadItems(m.cats.itemFocused)
+                return true
+            end if
+        end if
         if m.grid.content <> invalid and m.grid.content.getChildCount() > 0 then
             m.grid.setFocus(true)
             m.lastFocus = m.grid

@@ -16,7 +16,7 @@
       focusBitmapUri="pkg:/images/focus.9.png" vertFocusAnimationStyle="floatingFocus" />
     <Label id="msg" translation="[540,450]" width="1310" horizAlign="center" wrap="true" color="0xA9B5ACFF" />
     <Label id="hint" translation="[70,1020]" width="1780" color="0xA9B5ACFF" font="font:SmallestSystemFont"
-      text="OK: abrir     ✱ (asterisco): favoritar     ◀ ▶: trocar entre categorias e lista     Voltar: menu" />
+      text="OK: abrir     * (asterisco): favoritar     Esquerda/Direita: categorias e lista     Voltar: menu" />
     <Timer id="catTimer" duration="0.5" repeat="false" />
   </children>
 </component>

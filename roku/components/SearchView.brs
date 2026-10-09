@@ -84,8 +84,8 @@ sub onResults(ev as object)
     end if
     m.query.text = "Resultados para: " + m.text + "  (" + n.ToStr() + ")"
     m.msg.text = ""
-    m.grid.setFocus(true)
     m.lastFocus = m.grid
+    if IsActive() and m.dlg = invalid then m.grid.setFocus(true)
 end sub
 
 sub onSelect()

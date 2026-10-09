@@ -39,7 +39,7 @@ sub onEpisodes(ev as object)
     else
         m.msg.text = ""
     end if
-    m.list.setFocus(true)
+    if IsActive() then m.list.setFocus(true)
 end sub
 
 sub onSelect()

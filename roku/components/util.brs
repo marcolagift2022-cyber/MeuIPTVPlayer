@@ -45,11 +45,11 @@ function RegRead(key as string) as string
     return ""
 end function
 
-sub RegWrite(key as string, value as string)
+function RegWrite(key as string, value as string) as boolean
     sec = CreateObject("roRegistrySection", "xbrtopcine")
-    sec.Write(key, value)
-    sec.Flush()
-end sub
+    if not sec.Write(key, value) then return false
+    return sec.Flush()
+end function
 
 sub RegDelete(key as string)
     sec = CreateObject("roRegistrySection", "xbrtopcine")
@@ -89,6 +89,11 @@ function CopyItem(parent as object, src as object) as object
     return AddItem(parent, src.title, src.hdposterurl, src.url, src.shortdescriptionline1, src.shortdescriptionline2, src.description)
 end function
 
+' A tela ainda está aberta? (evita mexer no foco depois que o usuário saiu dela)
+function IsActive() as boolean
+    return m.top.getParent() <> invalid and m.top.visible
+end function
+
 ' Abre um item: série do Xtream vai para a lista de episódios; o resto toca direto
 sub OpenItem(scene as object, content as object, idx as integer)
     item = content.getChild(idx)
@@ -117,15 +122,19 @@ function ToggleFav(item as object) as string
     sid = item.shortdescriptionline2
     for i = 0 to favs.Count() - 1
         f = favs[i]
-        if ToS(f.kind) = kind and ToS(f.sid) = sid then
-            favs.Delete(i)
-            RegWrite("favs", FormatJson(favs))
-            return "Removido dos favoritos"
+        if type(f) = "roAssociativeArray" then
+            if ToS(f.kind) = kind and ToS(f.sid) = sid then
+                favs.Delete(i)
+                RegWrite("favs", FormatJson(favs))
+                return "Removido dos favoritos"
+            end if
         end if
     end for
-    if favs.Count() >= 50 then return "Limite de 50 favoritos atingido"
     favs.Push({ kind: kind, sid: sid, title: item.title, icon: item.hdposterurl, url: item.url })
-    RegWrite("favs", FormatJson(favs))
+    json = FormatJson(favs)
+    ' A Roku guarda no máximo 16 KB por aplicativo
+    if Len(json) > 12000 then return "Não cabem mais favoritos. Remova algum primeiro."
+    if not RegWrite("favs", json) then return "Não foi possível salvar o favorito."
     return "Adicionado aos favoritos"
 end function
 

@@ -55,7 +55,7 @@ sub showExp()
         return
     end if
     dt = CreateObject("roDateTime")
-    dt.FromSeconds(Int(Val(e)))
+    dt.FromSeconds(e.ToInt())
     dt.ToLocalTime()
     m.exp.text = "Vence em " + Pad2(dt.GetDayOfMonth()) + "/" + Pad2(dt.GetMonth()) + "/" + dt.GetYear().ToStr()
 end sub

@@ -16,6 +16,6 @@
       vertFocusAnimationStyle="floatingFocus" />
     <Label id="msg" translation="[70,500]" width="1780" horizAlign="center" wrap="true" color="0xA9B5ACFF" />
     <Label id="hint" translation="[70,1020]" width="1780" color="0xA9B5ACFF" font="font:SmallestSystemFont"
-      text="OK: abrir     ✱ (asterisco): favoritar     ▲: nova busca     Voltar: menu" />
+      text="OK: abrir     * (asterisco): favoritar     Para cima: nova busca     Voltar: menu" />
   </children>
 </component>

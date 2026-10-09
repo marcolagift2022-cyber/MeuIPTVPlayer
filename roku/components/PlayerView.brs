@@ -34,9 +34,9 @@ sub play(i as integer)
     m.name.text = item.title
     m.epg.text = ""
     if m.isLive then
-        m.keys.text = "▲▼ trocar canal     ✱ favoritar"
+        m.keys.text = "Cima/Baixo: trocar canal     *: favoritar"
     else
-        m.keys.text = "✱ favoritar"
+        m.keys.text = "*: favoritar"
     end if
     startVideo(item.url)
     showOsd()
