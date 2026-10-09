@@ -1,0 +1,44 @@
+name: Capturas de tela da TV
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "tv/tools/**"
+      - ".github/workflows/tv-screenshots.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  shots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Preparar
+        run: |
+          mkdir -p /tmp/hls && cd /tmp/hls && npm pack hls.js@1 --silent && tar xzf hls.js-*.tgz
+          cp /tmp/hls/package/dist/hls.min.js $GITHUB_WORKSPACE/tv/webapp/js/hls.min.js
+          cd $GITHUB_WORKSPACE/tv/tools && npm init -y >/dev/null && npm install puppeteer-core@22 --silent
+          which google-chrome && google-chrome --version
+
+      - name: Tirar as capturas
+        run: |
+          cd tv/tools
+          CHROME_PATH=$(which google-chrome) node screenshots.js $GITHUB_WORKSPACE/screens
+          ls -la $GITHUB_WORKSPACE/screens
+
+      - name: Publicar
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd screens && zip -q ../Capturas-TV.zip *.png && cd ..
+          gh release delete tv-capturas --yes --cleanup-tag 2>/dev/null || true
+          gh release create tv-capturas screens/*.png Capturas-TV.zip \
+            --title "Capturas de tela - TV (para a loja)" \
+            --notes "Capturas 1920x1080 do app de TV usando a lista de demonstração (sem conteúdo real)." \
+            --latest=false
