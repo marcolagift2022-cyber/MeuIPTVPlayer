@@ -83,8 +83,8 @@ sub openKeyboard(field as string, title as string)
     dlg.text = m.acc[field]
     dlg.buttons = ["OK", "Cancelar"]
     if field = "pass" then
-        box = dlg.textEditBox
-        if box <> invalid then box.secureMode = true
+        editBox = dlg.textEditBox
+        if editBox <> invalid then editBox.secureMode = true
     end if
     dlg.observeField("buttonSelected", "onKbButton")
     dlg.observeField("wasClosed", "onKbClosed")
