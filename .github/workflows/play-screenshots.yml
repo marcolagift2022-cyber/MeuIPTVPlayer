@@ -115,6 +115,6 @@ jobs:
           mkdir -p screens
           (cd screens && zip -q ../Capturas-Play.zip *.png) || true
           { echo "Capturas do app Android (versao Play) no celular, usando a lista de demonstracao (sem conteudo real)."; echo; echo '```'; tail -n 40 log.txt 2>/dev/null; echo '```'; } > notes.md
-          gh release delete play-capturas --yes --cleanup-tag 2>/dev/null || true
+          gh release delete play-capturas -R "$GITHUB_REPOSITORY" --yes --cleanup-tag 2>/dev/null || true
           FILES=$(ls screens/*.png screens/*.xml Capturas-Play.zip 2>/dev/null || true)
-          gh release create play-capturas $FILES --title "Capturas de tela - Play (celular)" --notes-file notes.md --latest=false
+          gh release create play-capturas -R "$GITHUB_REPOSITORY" --target main $FILES --title "Capturas de tela - Play (celular)" --notes-file notes.md --latest=false
