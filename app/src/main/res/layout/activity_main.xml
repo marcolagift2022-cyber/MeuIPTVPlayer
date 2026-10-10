@@ -41,17 +41,25 @@
             android:layout_weight="1"
             android:orientation="horizontal">
 
-            <Button
+            <FrameLayout
                 android:id="@+id/btn_live"
-                style="@style/MenuButton"
-                android:drawableTop="@drawable/ic_menu_live"
-                android:text="TV ao vivo" />
+                style="@style/MenuTile"
+                android:contentDescription="TV ao vivo">
 
-            <Button
+                <ImageView
+                    style="@style/MenuTileImage"
+                    android:src="@drawable/menu_live" />
+            </FrameLayout>
+
+            <FrameLayout
                 android:id="@+id/btn_movies"
-                style="@style/MenuButton"
-                android:drawableTop="@drawable/ic_menu_movies"
-                android:text="Filmes" />
+                style="@style/MenuTile"
+                android:contentDescription="Filmes">
+
+                <ImageView
+                    style="@style/MenuTileImage"
+                    android:src="@drawable/menu_movies" />
+            </FrameLayout>
         </LinearLayout>
 
         <LinearLayout
@@ -60,17 +68,25 @@
             android:layout_weight="1"
             android:orientation="horizontal">
 
-            <Button
+            <FrameLayout
                 android:id="@+id/btn_series"
-                style="@style/MenuButton"
-                android:drawableTop="@drawable/ic_menu_series"
-                android:text="Séries" />
+                style="@style/MenuTile"
+                android:contentDescription="Séries">
 
-            <Button
+                <ImageView
+                    style="@style/MenuTileImage"
+                    android:src="@drawable/menu_series" />
+            </FrameLayout>
+
+            <FrameLayout
                 android:id="@+id/btn_favorites"
-                style="@style/MenuButton"
-                android:drawableTop="@drawable/ic_menu_favorites"
-                android:text="Favoritos" />
+                style="@style/MenuTile"
+                android:contentDescription="Favoritos">
+
+                <ImageView
+                    style="@style/MenuTileImage"
+                    android:src="@drawable/menu_favorites" />
+            </FrameLayout>
         </LinearLayout>
     </LinearLayout>
 

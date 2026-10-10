@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.View
+import android.view.ViewOutlineProvider
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
@@ -51,11 +52,23 @@ class MainActivity : AppCompatActivity() {
             visibility = if (notice.isBlank()) View.GONE else View.VISIBLE
         }
 
-        val live = findViewById<Button>(R.id.btn_live)
-        live.setOnClickListener { open(Kind.LIVE) }
-        findViewById<Button>(R.id.btn_movies).setOnClickListener { open(Kind.MOVIE) }
-        findViewById<Button>(R.id.btn_series).setOnClickListener { open(Kind.SERIES) }
-        findViewById<Button>(R.id.btn_favorites).setOnClickListener { open(Kind.FAV) }
+        val live = findViewById<View>(R.id.btn_live)
+        val tiles = mapOf(
+            live to Kind.LIVE,
+            findViewById<View>(R.id.btn_movies) to Kind.MOVIE,
+            findViewById<View>(R.id.btn_series) to Kind.SERIES,
+            findViewById<View>(R.id.btn_favorites) to Kind.FAV,
+        )
+        tiles.forEach { (tile, kind) ->
+            tile.setOnClickListener { open(kind) }
+            // Cantos arredondados na imagem e um leve "zoom" quando o controle passa por cima
+            tile.outlineProvider = ViewOutlineProvider.BACKGROUND
+            tile.clipToOutline = true
+            tile.setOnFocusChangeListener { v, hasFocus ->
+                val scale = if (hasFocus) 1.04f else 1f
+                v.animate().scaleX(scale).scaleY(scale).setDuration(120).start()
+            }
+        }
 
         findViewById<Button>(R.id.btn_search).setOnClickListener {
             startActivity(Intent(this, SearchActivity::class.java))

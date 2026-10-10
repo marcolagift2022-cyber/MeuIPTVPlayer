@@ -30,6 +30,25 @@
         <item name="android:drawablePadding">6dp</item>
     </style>
 
+    <!-- Botões grandes do menu com imagem (TV ao vivo, Filmes, Séries, Favoritos) -->
+    <style name="MenuTile">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_margin">8dp</item>
+        <item name="android:background">@drawable/bg_tile</item>
+        <item name="android:foreground">@drawable/fg_tile</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+    </style>
+
+    <style name="MenuTileImage">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:scaleType">centerCrop</item>
+        <item name="android:importantForAccessibility">no</item>
+    </style>
+
     <!-- Botões pequenos com ícone (Buscar, Ajustes, Atualizar, Sair) -->
     <style name="ToolButton" parent="Widget.AppCompat.Button">
         <item name="android:layout_width">0dp</item>
