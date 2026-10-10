@@ -1,6 +1,10 @@
 package com.meuiptv.player
 
 import android.annotation.SuppressLint
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
+import android.text.style.RelativeSizeSpan
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -17,6 +21,14 @@ class TextAdapter(
 ) : RecyclerView.Adapter<TextAdapter.VH>() {
 
     var labels: List<String> = emptyList()
+        @SuppressLint("NotifyDataSetChanged")
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
+
+    /** Quantidade de itens de cada posição (ex.: canais da categoria). Vazio = não mostra. */
+    var counts: List<Int?> = emptyList()
         @SuppressLint("NotifyDataSetChanged")
         set(value) {
             field = value
@@ -44,7 +56,20 @@ class TextAdapter(
     override fun getItemCount() = labels.size
 
     override fun onBindViewHolder(holder: VH, position: Int) {
-        holder.text.text = labels[position]
+        val count = counts.getOrNull(position)
+        holder.text.text = if (count == null) {
+            labels[position]
+        } else {
+            // "Jogos do Dia  (27)": o número fica menor e mais apagado
+            val dim = holder.text.context.getColor(R.color.text_dim)
+            SpannableStringBuilder(labels[position]).apply {
+                append("  ")
+                val start = length
+                append("($count)")
+                setSpan(ForegroundColorSpan(dim), start, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                setSpan(RelativeSizeSpan(0.85f), start, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+        }
         holder.text.isActivated = position == selected
         holder.text.setOnClickListener {
             val p = holder.bindingAdapterPosition

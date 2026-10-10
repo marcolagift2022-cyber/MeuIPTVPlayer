@@ -36,6 +36,7 @@ class ListActivity : AppCompatActivity() {
     private var shown: List<Item> = emptyList()
     private var currentCat = -1
     private var loadJob: Job? = null
+    private var countJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,7 +96,12 @@ class ListActivity : AppCompatActivity() {
         super.onResume()
         // Ao voltar do player, atualiza as estrelas (e a lista, na tela de Favoritos)
         if (currentCat < 0) return
-        if (kind == Kind.FAV) selectCategory(currentCat) else itemAdapter.favoriteKeys = prefs.favoriteKeys()
+        if (kind == Kind.FAV) {
+            selectCategory(currentCat)
+            loadCounts()
+        } else {
+            itemAdapter.favoriteKeys = prefs.favoriteKeys()
+        }
     }
 
     private fun loadCategories(keepCategoryId: String? = null) {
@@ -132,6 +138,8 @@ class ListActivity : AppCompatActivity() {
 
     private fun showCategories(keepCategoryId: String? = null) {
         catAdapter.labels = categoryLabels()
+        catAdapter.counts = emptyList()
+        loadCounts()
         if (categories.isEmpty()) {
             setLoading(false)
             showMessage("Nenhuma categoria encontrada.")
@@ -147,6 +155,36 @@ class ListActivity : AppCompatActivity() {
                 else -> 0
             }
         )
+    }
+
+    /**
+     * Conta quantos itens tem cada categoria e mostra ao lado do nome.
+     * Roda em segundo plano: a lista aparece na hora e os números chegam logo depois.
+     */
+    private fun loadCounts() {
+        countJob?.cancel()
+        if (kind == Kind.FAV) {
+            val favs = prefs.favorites()
+            catAdapter.counts = categories.map { cat -> favs.count { it.kind == cat.id } }
+            return
+        }
+        val cats = categories
+        countJob = lifecycleScope.launch {
+            try {
+                val counts = withContext(Dispatchers.IO) {
+                    val all = Repository.items(kind, Kind.ALL)
+                    val perCategory = all.groupingBy { it.categoryId }.eachCount()
+                    val adult = if (adultLocked()) Repository.adultCategoryIds(kind) else emptySet()
+                    val visibleTotal = if (adult.isEmpty()) all.size else all.count { it.categoryId !in adult }
+                    cats.map { if (it.id == Kind.ALL) visibleTotal else perCategory[it.id] ?: 0 }
+                }
+                if (cats === categories) catAdapter.counts = counts
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                // Sem os números a lista continua funcionando normalmente
+            }
+        }
     }
 
     private fun selectCategory(index: Int) {
@@ -240,7 +278,12 @@ class ListActivity : AppCompatActivity() {
     private fun toggleFavorite(item: Item) {
         val added = prefs.toggleFavorite(item)
         toast(if (added) "Adicionado aos favoritos" else "Removido dos favoritos")
-        if (kind == Kind.FAV) selectCategory(currentCat) else itemAdapter.favoriteKeys = prefs.favoriteKeys()
+        if (kind == Kind.FAV) {
+            selectCategory(currentCat)
+            loadCounts()
+        } else {
+            itemAdapter.favoriteKeys = prefs.favoriteKeys()
+        }
     }
 
     private fun setLoading(loading: Boolean) {
