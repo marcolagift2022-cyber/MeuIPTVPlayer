@@ -1,0 +1,120 @@
+name: Capturas de tela da Play
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release da Play com o APK de teste"
+        default: "play-v1.0.6"
+
+permissions:
+  contents: write
+
+jobs:
+  shots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Ativar KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Baixar APK de teste
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download "${{ inputs.tag }}" -R "${{ github.repository }}" -p '*-teste.apk' -O app.apk
+          ls -la app.apk
+
+      - name: Preparar roteiro
+        run: |
+          cat > find.py <<'PY'
+          import re, sys
+          import xml.etree.ElementTree as ET
+          rid, child = sys.argv[1], sys.argv[2] == "1"
+          root = ET.parse("/tmp/ui.xml").getroot()
+          for n in root.iter("node"):
+              if n.get("resource-id", "").endswith(":id/" + rid):
+                  t = n
+                  if child:
+                      kids = list(n)
+                      if not kids:
+                          continue
+                      t = kids[0]
+                  x1, y1, x2, y2 = map(int, re.findall(r"\d+", t.get("bounds")))
+                  print((x1 + x2) // 2, (y1 + y2) // 2)
+                  break
+          PY
+          cat > shots.sh <<'SH'
+          set -x
+          PKG=com.xbrtopcine.player
+          URL=https://raw.githubusercontent.com/marcolagift2022-cyber/MeuIPTVPlayer/main/loja/demo.m3u
+          OUT=$PWD/screens
+          mkdir -p "$OUT"
+          shot() { sleep 1; adb exec-out screencap -p > "$OUT/$1.png"; echo "OK $1"; }
+          dump() { adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1; adb pull /sdcard/ui.xml /tmp/ui.xml >/dev/null 2>&1; }
+          tap() {
+            dump
+            c=$(python3 find.py "$1" "${2:-0}")
+            if [ -n "$c" ]; then adb shell input tap $c; echo "TOQUE $1 -> $c"; else echo "NAO ACHEI $1"; cp /tmp/ui.xml "$OUT/debug-$1.xml"; fi
+          }
+          adb install -r app.apk
+          adb shell pm grant $PKG android.permission.POST_NOTIFICATIONS || true
+          adb shell settings put global sysui_demo_allowed 1
+          adb shell am broadcast -a com.android.systemui.demo -e command enter
+          adb shell am broadcast -a com.android.systemui.demo -e command clock -e hhmm 1200
+          adb shell am broadcast -a com.android.systemui.demo -e command battery -e level 100 -e plugged false
+          adb shell am broadcast -a com.android.systemui.demo -e command network -e wifi show -e level 4
+          adb shell am broadcast -a com.android.systemui.demo -e command notifications -e visible false
+          adb shell monkey -p $PKG -c android.intent.category.LAUNCHER 1
+          sleep 10
+          tap tab_m3u
+          sleep 1
+          tap m3u
+          adb shell input text "$URL"
+          adb shell input keyevent 111
+          sleep 2
+          shot 1-login
+          tap enter
+          sleep 20
+          shot 2-menu
+          tap btn_movies
+          sleep 10
+          shot 3-filmes
+          adb shell input keyevent 4
+          sleep 3
+          tap btn_live
+          sleep 10
+          shot 4-ao-vivo
+          tap items 1
+          sleep 25
+          shot 5-player
+          adb shell input keyevent 4
+          sleep 3
+          ls -la "$OUT"
+          SH
+
+      - name: Tirar as capturas no emulador
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash shots.sh 2>&1 | tee log.txt
+
+      - name: Publicar
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p screens
+          (cd screens && zip -q ../Capturas-Play.zip *.png) || true
+          { echo "Capturas do app Android (versao Play) no celular, usando a lista de demonstracao (sem conteudo real)."; echo; echo '```'; tail -n 40 log.txt 2>/dev/null; echo '```'; } > notes.md
+          gh release delete play-capturas --yes --cleanup-tag 2>/dev/null || true
+          FILES=$(ls screens/*.png screens/*.xml Capturas-Play.zip 2>/dev/null || true)
+          gh release create play-capturas $FILES --title "Capturas de tela - Play (celular)" --notes-file notes.md --latest=false
