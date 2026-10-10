@@ -64,9 +64,12 @@ class MainActivity : AppCompatActivity() {
             // Cantos arredondados na imagem e um leve "zoom" quando o controle passa por cima
             tile.outlineProvider = ViewOutlineProvider.BACKGROUND
             tile.clipToOutline = true
+            // A sombra é o 2º item do botão (imagem, sombra, nome): clareia um pouco quando focado
+            val shade = (tile as android.view.ViewGroup).getChildAt(1)
             tile.setOnFocusChangeListener { v, hasFocus ->
                 val scale = if (hasFocus) 1.04f else 1f
                 v.animate().scaleX(scale).scaleY(scale).setDuration(120).start()
+                shade.animate().alpha(if (hasFocus) 0.55f else 1f).setDuration(120).start()
             }
         }
 

@@ -59,6 +59,15 @@
                 <ImageView
                     style="@style/MenuTileImage"
                     android:src="@drawable/menu_live" />
+
+                <View
+                    android:id="@+id/shade_live"
+                    style="@style/MenuTileShade" />
+
+                <TextView
+                    style="@style/MenuTileLabel"
+                    android:drawableTop="@drawable/ic_menu_live"
+                    android:text="TV ao vivo" />
             </FrameLayout>
 
             <FrameLayout
@@ -69,6 +78,15 @@
                 <ImageView
                     style="@style/MenuTileImage"
                     android:src="@drawable/menu_movies" />
+
+                <View
+                    android:id="@+id/shade_movies"
+                    style="@style/MenuTileShade" />
+
+                <TextView
+                    style="@style/MenuTileLabel"
+                    android:drawableTop="@drawable/ic_menu_movies"
+                    android:text="Filmes" />
             </FrameLayout>
         </LinearLayout>
 
@@ -86,6 +104,15 @@
                 <ImageView
                     style="@style/MenuTileImage"
                     android:src="@drawable/menu_series" />
+
+                <View
+                    android:id="@+id/shade_series"
+                    style="@style/MenuTileShade" />
+
+                <TextView
+                    style="@style/MenuTileLabel"
+                    android:drawableTop="@drawable/ic_menu_series"
+                    android:text="Séries" />
             </FrameLayout>
 
             <FrameLayout
@@ -96,6 +123,15 @@
                 <ImageView
                     style="@style/MenuTileImage"
                     android:src="@drawable/menu_favorites" />
+
+                <View
+                    android:id="@+id/shade_favorites"
+                    style="@style/MenuTileShade" />
+
+                <TextView
+                    style="@style/MenuTileLabel"
+                    android:drawableTop="@drawable/ic_menu_favorites"
+                    android:text="Favoritos" />
             </FrameLayout>
         </LinearLayout>
     </LinearLayout>

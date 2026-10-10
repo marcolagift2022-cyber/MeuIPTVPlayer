@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sombra por cima da arte do botão: mais escura embaixo, onde fica o nome -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:angle="270"
+        android:centerColor="#A6000000"
+        android:endColor="#C8000000"
+        android:startColor="#8C000000" />
+    <corners android:radius="14dp" />
+</shape>
