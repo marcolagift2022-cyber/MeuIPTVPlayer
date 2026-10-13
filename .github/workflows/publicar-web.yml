@@ -15,6 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Conferir as bibliotecas de vídeo (CDN)
+        run: |
+          for u in $(grep -o 'https://cdn.jsdelivr.net/[^"]*' web/index.html); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$u"); echo "$code $u"; [ "$code" = "200" ]
+          done
       - name: Publicar no ramo gh-pages
         run: |
           cd web

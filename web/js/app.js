@@ -211,7 +211,7 @@
         var o = arr[i];
         if (kind === 'live') {
           out.push({ id: str(o.stream_id), name: str(o.name), icon: o.stream_icon || null, kind: 'live', cat: str(o.category_id),
-            url: base + '/live/' + u + '/' + p + '/' + o.stream_id + '.' + (account.fmt || 'm3u8') });
+            url: base + '/live/' + u + '/' + p + '/' + o.stream_id + '.ts' });
         } else if (kind === 'movie') {
           out.push({ id: str(o.stream_id), name: str(o.name), icon: o.stream_icon || null, kind: 'movie', cat: str(o.category_id),
             url: base + '/movie/' + u + '/' + p + '/' + o.stream_id + '.' + (o.container_extension || 'mp4') });
@@ -778,7 +778,7 @@
   // ======================================================================
   // Player
   // ======================================================================
-  var video = $('video'), hls = null, queue = [], qIndex = 0, retries = 0, osdTimer = null, epgSeq = 0;
+  var video = $('video'), hls = null, mts = null, queue = [], qIndex = 0, retries = 0, osdTimer = null, epgSeq = 0;
 
   function playQueue(list, index) {
     queue = list;
@@ -807,6 +807,21 @@
         playerError('O vídeo não começou depois de 25 segundos.\nDetalhe: ' + (lastErr || 'sem resposta do servidor · ' + safeUrl(url)));
       }
     }, 25000);
+    // Canal ao vivo em .ts: toca com o mpegts.js. Se não der, tenta o mesmo canal em .m3u8.
+    if (/\.ts(\?|$)/i.test(url) && window.mpegts && mpegts.getFeatureList().mseLivePlayback) {
+      mts = mpegts.createPlayer({ type: 'mpegts', isLive: true, url: url },
+        { enableWorker: true, lazyLoad: false, liveBufferLatencyChasing: true, autoCleanupSourceBuffer: true });
+      mts.attachMediaElement(video);
+      mts.on(mpegts.Events.ERROR, function (type, detail, info) {
+        lastErr = 'TS: ' + type + ' · ' + detail + (info && info.code ? ' · código ' + info.code : '') + ' · ' + safeUrl(url);
+        var alt = url.replace(/\.ts(\?|$)/i, '.m3u8$1');
+        if (current === 'player' && alt !== url) { startStream(alt); return; }
+        onVideoError();
+      });
+      mts.load();
+      tryPlay();
+      return;
+    }
     var isHls = /\.m3u8(\?|$)/i.test(url);
     var native = video.canPlayType('application/vnd.apple.mpegurl') || video.canPlayType('application/x-mpegURL');
     if (isHls && !native && window.Hls && Hls.isSupported()) {
@@ -833,6 +848,10 @@
 
   function destroyHls() {
     if (hls) { try { hls.destroy(); } catch (e) {} hls = null; }
+    if (mts) {
+      try { mts.pause(); mts.unload(); mts.detachMediaElement(); mts.destroy(); } catch (e) {}
+      mts = null;
+    }
   }
 
   function stopPlayer() {
@@ -894,7 +913,7 @@
   video.addEventListener('playing', function () { hide($('player-loading')); retries = 0; clearTimeout(watchdog); playerError(''); });
   video.addEventListener('waiting', function () { show($('player-loading')); });
   video.addEventListener('error', function () {
-    if (hls) return;
+    if (hls || mts) return;
     var code = video.error ? video.error.code : 0, it = queue[qIndex];
     // Filme/episódio num formato que o navegador não toca (ex.: H.265): tentar de novo não adianta
     if ((code === 3 || code === 4) && it && it.kind !== 'live' && /^https:/i.test(it.url) === (location.protocol === 'https:')) {
