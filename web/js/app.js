@@ -388,8 +388,24 @@
     }, true);
   }
 
+  /**
+   * Site com cadeado (https) não pode buscar dados em http. Então, quando a página é https,
+   * tenta primeiro cada DNS com https e depois o endereço original.
+   */
+  function withHttps(servers) {
+    if (location.protocol !== 'https:') return servers;
+    var out = [];
+    for (var i = 0; i < servers.length; i++) {
+      var s = normalizeUrl(servers[i]);
+      if (/^http:\/\//i.test(s)) out.push(s.replace(/^http:/i, 'https:'));
+      out.push(s);
+    }
+    return out;
+  }
+
   /** Tenta o login em cada DNS, na ordem, até um aceitar (igual ao app Android). */
   function loginWithServers(user, pass, servers, cb) {
+    servers = withHttps(servers);
     var i = 0, authErr = null, netErr = null;
     function next() {
       if (i >= servers.length) {
