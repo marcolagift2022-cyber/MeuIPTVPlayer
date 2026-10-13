@@ -1,0 +1,33 @@
+name: Teste CORS do servidor (temporário)
+on:
+  push:
+    paths: [".github/workflows/teste-cors.yml"]
+permissions:
+  contents: write
+jobs:
+  teste:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Testar cada DNS
+        run: |
+          for d in $(jq -r '.dns[]' config.json); do
+            echo "=== $d"
+            echo "--- login (usuário inválido de propósito), com Origin de um site:"
+            curl -sS -m 25 -D - -o body.txt -H "Origin: https://brutcine.ink" "$d/player_api.php?username=teste_cors&password=teste_cors" 2>&1 | grep -iE "^HTTP|access-control|^location|^server|^content-type|curl:" || true
+            echo "corpo: $(head -c 250 body.txt 2>/dev/null)"
+            echo "--- pré-verificação (OPTIONS):"
+            curl -sS -m 25 -X OPTIONS -D - -o /dev/null -H "Origin: https://brutcine.ink" -H "Access-Control-Request-Method: GET" "$d/player_api.php" 2>&1 | grep -iE "^HTTP|access-control|curl:" || true
+            echo "--- https funciona?"
+            h=$(echo "$d" | sed 's#^http://#https://#')
+            curl -sS -m 20 -o /dev/null -w "https: %{http_code}\n" "$h/player_api.php" 2>&1 | tail -1
+            echo
+          done > resultado.txt 2>&1
+          cat resultado.txt
+      - name: Publicar resultado
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          { echo '```'; cat resultado.txt; echo '```'; } > notes.md
+          gh release delete teste-cors --yes --cleanup-tag 2>/dev/null || true
+          gh release create teste-cors --title "Teste CORS do servidor" --notes-file notes.md --latest=false
