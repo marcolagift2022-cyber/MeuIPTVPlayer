@@ -9,6 +9,7 @@ on:
       - "tv/**"
       - "loja/**"
       - "roku/**"
+      - "web/**"
       - ".github/workflows/build-roku.yml"
       - ".github/workflows/build-tv.yml"
       - ".github/workflows/build-play.yml"
