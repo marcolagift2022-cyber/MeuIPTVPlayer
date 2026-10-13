@@ -798,6 +798,15 @@
   function startStream(url) {
     destroyHls();
     show($('player-loading'));
+    playerError('');
+    lastErr = '';
+    clearTimeout(watchdog);
+    watchdog = setTimeout(function () {
+      if (current === 'player' && video.readyState < 3) {
+        hide($('player-loading'));
+        playerError('O vídeo não começou depois de 25 segundos.\nDetalhe: ' + (lastErr || 'sem resposta do servidor · ' + safeUrl(url)));
+      }
+    }, 25000);
     var isHls = /\.m3u8(\?|$)/i.test(url);
     var native = video.canPlayType('application/vnd.apple.mpegurl') || video.canPlayType('application/x-mpegURL');
     if (isHls && !native && window.Hls && Hls.isSupported()) {
@@ -805,7 +814,11 @@
       hls.loadSource(url);
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, function () { tryPlay(); });
-      hls.on(Hls.Events.ERROR, function (e, data) { if (data && data.fatal) onVideoError(); });
+      hls.on(Hls.Events.ERROR, function (e, data) {
+        if (!data) return;
+        lastErr = describeHls(data);
+        if (data.fatal) onVideoError();
+      });
     } else {
       video.src = url;
       video.load();
@@ -826,27 +839,61 @@
     destroyHls();
     try { video.pause(); video.removeAttribute('src'); video.load(); } catch (e) {}
     hide($('osd')); hide($('player-loading'));
-    clearTimeout(osdTimer);
+    clearTimeout(osdTimer); clearTimeout(watchdog); playerError('');
     try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) {}
   }
 
   function isLive() { var it = queue[qIndex]; return it && it.kind === 'live'; }
 
+  // ---------------------------------------------------------------- Diagnóstico de erros
+  var lastErr = '', watchdog = null;
+
+  /** Mostra só "https://servidor/…/.ext" (sem usuário e senha que vão no link). */
+  function safeUrl(u) {
+    if (!u) return '';
+    var m = /^(https?):\/\/([^\/?#]+)[^?#]*?(\.[a-z0-9]{2,5})?(?:[?#]|$)/i.exec(String(u));
+    return m ? m[1] + '://' + m[2] + '/…' + (m[3] || '') : '';
+  }
+
+  function describeHls(d) {
+    var url = (d.frag && d.frag.url) || (d.context && d.context.url) || d.url || '';
+    var code = d.response && d.response.code;
+    var txt = d.details || d.type || 'erro';
+    if (code !== undefined && code !== null) txt += ' · código ' + code;
+    if (url) txt += ' · ' + safeUrl(url);
+    if (location.protocol === 'https:' && /^http:/i.test(url)) txt += ' · link http bloqueado no site https';
+    return txt;
+  }
+
+  function describeNative() {
+    var e = video.error, code = e ? e.code : 0;
+    var names = { 1: 'cancelado', 2: 'erro de rede', 3: 'o navegador não consegue decodificar este vídeo (formato de áudio/vídeo)', 4: 'formato não suportado pelo navegador ou link bloqueado' };
+    var it = queue[qIndex];
+    return (names[code] || 'erro ' + code) + (it ? ' · ' + safeUrl(it.url) : '');
+  }
+
+  function playerError(text) {
+    var el = $('player-error');
+    el.textContent = text;
+    if (text) show(el); else hide(el);
+  }
+
   function onVideoError() {
     if (current !== 'player') return;
-    if (retries < 3) {
+    clearTimeout(watchdog);
+    if (retries < 2) {
       retries++;
-      toast('Reconectando... (' + retries + '/3)');
+      toast('Reconectando... (' + retries + '/2)');
       setTimeout(function () { if (current === 'player') startStream(queue[qIndex].url); }, 2000);
     } else {
       hide($('player-loading'));
-      toast('Não foi possível reproduzir este conteúdo.');
+      playerError('Não foi possível reproduzir este conteúdo.\nDetalhe: ' + (lastErr || describeNative()));
     }
   }
 
-  video.addEventListener('playing', function () { hide($('player-loading')); retries = 0; });
+  video.addEventListener('playing', function () { hide($('player-loading')); retries = 0; clearTimeout(watchdog); playerError(''); });
   video.addEventListener('waiting', function () { show($('player-loading')); });
-  video.addEventListener('error', function () { if (!hls) onVideoError(); });
+  video.addEventListener('error', function () { if (!hls) { lastErr = describeNative(); onVideoError(); } });
   video.addEventListener('ended', function () {
     if (!isLive() && qIndex < queue.length - 1) { qIndex++; playCurrent(); }
     else if (!isLive()) goBack();
