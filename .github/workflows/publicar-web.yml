@@ -19,6 +19,8 @@ jobs:
         run: |
           cd web
           touch .nojekyll
+          # Endereço próprio do site (domínio da Namecheap)
+          echo "brutcine.ink" > CNAME
           # Versão no endereço dos arquivos: o navegador sempre baixa a mais nova
           V=$(echo "${{ github.sha }}" | cut -c1-8)
           sed -i "s#css/style.css\"#css/style.css?v=$V\"#; s#js/app.js\"#js/app.js?v=$V\"#" index.html
