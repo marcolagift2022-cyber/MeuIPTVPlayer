@@ -893,7 +893,20 @@
 
   video.addEventListener('playing', function () { hide($('player-loading')); retries = 0; clearTimeout(watchdog); playerError(''); });
   video.addEventListener('waiting', function () { show($('player-loading')); });
-  video.addEventListener('error', function () { if (!hls) { lastErr = describeNative(); onVideoError(); } });
+  video.addEventListener('error', function () {
+    if (hls) return;
+    var code = video.error ? video.error.code : 0, it = queue[qIndex];
+    // Filme/episódio num formato que o navegador não toca (ex.: H.265): tentar de novo não adianta
+    if ((code === 3 || code === 4) && it && it.kind !== 'live' && /^https:/i.test(it.url) === (location.protocol === 'https:')) {
+      clearTimeout(watchdog);
+      hide($('player-loading'));
+      playerError('Este filme está num formato que este navegador não reproduz.\n' +
+        'Assista pelo aplicativo X BR TOP CINE ou pelo celular.');
+      return;
+    }
+    lastErr = describeNative();
+    onVideoError();
+  });
   video.addEventListener('ended', function () {
     if (!isLive() && qIndex < queue.length - 1) { qIndex++; playCurrent(); }
     else if (!isLive()) goBack();
