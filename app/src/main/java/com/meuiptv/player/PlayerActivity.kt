@@ -45,12 +45,14 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var infoBox: View
     private lateinit var infoName: TextView
     private lateinit var infoEpg: TextView
+    private lateinit var reconnectBox: TextView
 
     private val handler = Handler(Looper.getMainLooper())
     private var items: List<Item> = emptyList()
     private var startIndex = 0
     private var startPosition = 0L
     private var retries = 0
+    private var gaveUp = false
     private var epgJob: Job? = null
 
     private val hideInfo = Runnable { infoBox.visibility = View.GONE }
@@ -77,6 +79,7 @@ class PlayerActivity : AppCompatActivity() {
         infoBox = findViewById(R.id.info_box)
         infoName = findViewById(R.id.info_name)
         infoEpg = findViewById(R.id.info_epg)
+        reconnectBox = findViewById(R.id.reconnect_box)
 
         // Quando os controles aparecem (toque na tela / OK no controle), mostra o nome e o EPG
         playerView.setControllerVisibilityListener(
@@ -125,15 +128,20 @@ class PlayerActivity : AppCompatActivity() {
         val allLive = items.all { it.kind == Kind.LIVE }
         val position = if (items[startIndex].kind == Kind.LIVE) C.TIME_UNSET else startPosition
         p.setMediaItems(items.map { toMediaItem(it) }, startIndex, position)
-        // Canais: ao passar do último volta ao primeiro. Episódios: para no fim da série.
-        p.repeatMode = if (allLive) Player.REPEAT_MODE_ALL else Player.REPEAT_MODE_OFF
+        // Não pula sozinho para o próximo item: se um canal "acabar", é queda e o app reconecta
+        // nele mesmo. A troca de canal (com volta ao início da lista) é feita em changeChannel().
+        p.repeatMode = Player.REPEAT_MODE_OFF
         // Configuração "próximo episódio automático"
-        p.pauseAtEndOfMediaItems = !allLive && !Settings.autoNextEpisode
+        // Canal ao vivo: se a transmissão "terminar", o player para nele (em vez de pular de canal)
+        // e o app reconecta. Filmes/séries: segue a opção "próximo episódio automático".
+        p.pauseAtEndOfMediaItems = allLive || !Settings.autoNextEpisode
         p.addListener(listener)
         p.playWhenReady = true
         p.prepare()
         player = p
         retries = 0
+        gaveUp = false
+        reconnectBox.visibility = View.GONE
         updateControls()
         showInfo()
     }
@@ -155,6 +163,7 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun releasePlayer() {
         handler.removeCallbacksAndMessages(null)
+        reconnectBox.visibility = View.GONE
         epgJob?.cancel()
         player?.let {
             startIndex = it.currentMediaItemIndex
@@ -172,31 +181,119 @@ class PlayerActivity : AppCompatActivity() {
         return builder.build()
     }
 
+    // ------------------------------------------------------------ reconexão automática
+
+    private val maxRetries = 5
+
+    /** Canal travado: se ficar carregando muito tempo sem voltar a tocar, conta como queda. */
+    private val stallCheck = Runnable {
+        val p = player ?: return@Runnable
+        if (p.playbackState == Player.STATE_BUFFERING) reconnect("o canal travou")
+    }
+
+    private fun watchStall() {
+        handler.removeCallbacks(stallCheck)
+        if (currentItem?.kind == Kind.LIVE) handler.postDelayed(stallCheck, 15_000)
+    }
+
+    /**
+     * Tenta voltar a tocar o MESMO item: até 5 vezes, com o aviso "Reconectando... tentativa X de 5".
+     * Canal ao vivo volta no ponto atual da transmissão; filme/episódio volta de onde parou.
+     */
+    private fun reconnect(reason: String) {
+        val p = player ?: return
+        if (gaveUp) return
+        handler.removeCallbacks(stallCheck)
+        handler.removeCallbacks(retryNow)
+        if (retries >= maxRetries) {
+            gaveUp = true
+            reconnectBox.text = "Não foi possível reconectar ao canal.\nAperte OK para tentar de novo ou troque de canal."
+            reconnectBox.visibility = View.VISIBLE
+            return
+        }
+        retries++
+        resumeIndex = p.currentMediaItemIndex
+        resumePosition = if (currentItem?.kind == Kind.LIVE) C.TIME_UNSET else p.currentPosition
+        reconnectBox.text = "Reconectando... tentativa $retries de $maxRetries"
+        reconnectBox.visibility = View.VISIBLE
+        // Espera um pouco a mais a cada tentativa (2s, 3s, 4s...) para dar tempo ao servidor
+        handler.postDelayed(retryNow, (1_000L + retries * 1_000L))
+    }
+
+    private var resumeIndex = 0
+    private var resumePosition = C.TIME_UNSET
+
+    private val retryNow = Runnable {
+        val p = player ?: return@Runnable
+        p.stop()
+        if (resumePosition == C.TIME_UNSET) p.seekToDefaultPosition(resumeIndex) else p.seekTo(resumeIndex, resumePosition)
+        p.prepare()
+        p.play()
+        watchStall()
+    }
+
+    /** Tentar de novo depois de desistir (botão OK). */
+    private fun retryAgain() {
+        gaveUp = false
+        retries = 0
+        reconnect("manual")
+    }
+
+    private fun connectionOk() {
+        retries = 0
+        gaveUp = false
+        handler.removeCallbacks(stallCheck)
+        reconnectBox.visibility = View.GONE
+    }
+
+    /** Troca de canal com volta ao início/fim da lista. */
+    private fun changeChannel(direction: Int) {
+        val p = player ?: return
+        val count = p.mediaItemCount
+        if (count < 2) return
+        val next = (p.currentMediaItemIndex + direction + count) % count
+        connectionOk()
+        p.seekToDefaultPosition(next)
+        p.prepare()
+        p.play()
+    }
+
     private val listener = object : Player.Listener {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-            retries = 0
+            connectionOk()
             updateControls()
             showInfo()
         }
 
         override fun onPlaybackStateChanged(playbackState: Int) {
-            if (playbackState == Player.STATE_READY) retries = 0
+            val live = currentItem?.kind == Kind.LIVE
+            when (playbackState) {
+                Player.STATE_READY -> if (player?.playWhenReady == true) connectionOk()
+                Player.STATE_BUFFERING -> watchStall()
+                // Canal ao vivo não "acaba": se acabou, a transmissão caiu
+                Player.STATE_ENDED -> if (live) reconnect("a transmissão parou") else handleVodEnd()
+                Player.STATE_IDLE -> {}
+            }
+        }
+
+        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+            if (reason == Player.PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM && currentItem?.kind == Kind.LIVE) {
+                reconnect("a transmissão parou")
+            }
         }
 
         override fun onPlayerError(error: PlaybackException) {
-            // Conexões de IPTV caem com frequência: tenta reconectar sozinho algumas vezes
-            if (retries < 3) {
-                retries++
-                toast("Reconectando... ($retries/3)")
-                handler.postDelayed({
-                    player?.let {
-                        if (currentItem?.kind == Kind.LIVE) it.seekToDefaultPosition()
-                        it.prepare()
-                    }
-                }, 2_000)
-            } else {
-                toast("Não foi possível reproduzir este conteúdo (${error.errorCodeName}).")
-            }
+            // Conexões de IPTV caem com frequência: tenta reconectar sozinho no mesmo item
+            reconnect(error.errorCodeName)
+        }
+    }
+
+    /** Fim de filme/episódio: vai para o próximo episódio (se houver e se a opção estiver ligada). */
+    private fun handleVodEnd() {
+        val p = player ?: return
+        if (Settings.autoNextEpisode && p.hasNextMediaItem()) {
+            p.seekToNextMediaItem()
+            p.play()
         }
     }
 
@@ -242,11 +339,16 @@ class PlayerActivity : AppCompatActivity() {
                 else -> 0
             }
             if (direction != 0) {
-                if (event.action == KeyEvent.ACTION_DOWN) {
-                    if (direction > 0) p.seekToNextMediaItem() else p.seekToPreviousMediaItem()
-                }
+                if (event.action == KeyEvent.ACTION_DOWN) changeChannel(direction)
                 return true
             }
+        }
+        // Depois de desistir de reconectar: OK tenta de novo
+        if (p != null && gaveUp && event.action == KeyEvent.ACTION_DOWN &&
+            (event.keyCode == KeyEvent.KEYCODE_DPAD_CENTER || event.keyCode == KeyEvent.KEYCODE_ENTER)
+        ) {
+            retryAgain()
+            return true
         }
         return super.dispatchKeyEvent(event)
     }
