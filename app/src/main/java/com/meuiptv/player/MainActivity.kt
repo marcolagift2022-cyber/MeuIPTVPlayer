@@ -10,6 +10,10 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -94,7 +98,29 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (!BuildConfig.PLAY_STORE) Updater.resumePending(this) // voltando da tela de permissão de instalação
+        if (!BuildConfig.PLAY_STORE) {
+            Updater.resumePending(this) // voltando da tela de permissão de instalação
+            refreshConfigAndCheckUpdate()
+        }
+    }
+
+    /**
+     * Na TV Box o app quase nunca é fechado de verdade. Então, sempre que o menu volta para a tela
+     * (no máximo a cada 10 minutos), baixa o config.json de novo e confere se há versão nova.
+     */
+    private fun refreshConfigAndCheckUpdate() {
+        val now = System.currentTimeMillis()
+        if (now - lastConfigCheck < 10 * 60 * 1000L) return
+        lastConfigCheck = now
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) { RemoteConfig.load(this@MainActivity) }
+            if (!isFinishing && !isDestroyed) Updater.checkAndPrompt(this@MainActivity)
+        }
+    }
+
+    companion object {
+        /** Última vez que o config.json foi conferido (vale enquanto o app estiver aberto). */
+        private var lastConfigCheck = System.currentTimeMillis()
     }
 
     override fun onStart() {
