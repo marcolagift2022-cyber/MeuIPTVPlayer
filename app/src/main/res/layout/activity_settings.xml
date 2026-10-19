@@ -20,6 +20,29 @@
             android:textSize="26sp"
             android:textStyle="bold" />
 
+        <!-- Teste de internet -->
+        <LinearLayout style="@style/SettingsCard">
+
+            <TextView
+                style="@style/SettingsTitle"
+                android:text="Teste de internet" />
+
+            <TextView
+                android:id="@+id/speed_result"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:lineSpacingExtra="4dp"
+                android:text="Mede a velocidade da internet deste aparelho (leva uns 10 segundos)."
+                android:textColor="@color/text"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/speed_test"
+                style="@style/SettingsButton"
+                android:text="Testar velocidade da internet" />
+        </LinearLayout>
+
         <!-- Reprodução -->
         <LinearLayout style="@style/SettingsCard">
 

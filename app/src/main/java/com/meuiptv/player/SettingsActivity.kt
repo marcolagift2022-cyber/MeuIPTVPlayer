@@ -7,11 +7,16 @@ import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import coil.annotation.ExperimentalCoilApi
 import coil.imageLoader
 import java.util.Locale
 
-/** Tela de Configurações: formato dos canais, próximo episódio, controle dos pais e cache. */
+/** Tela de Configurações: teste de internet, formato dos canais, próximo episódio, controle dos pais e cache. */
 @OptIn(ExperimentalCoilApi::class)
 class SettingsActivity : AppCompatActivity() {
 
@@ -84,6 +89,11 @@ class SettingsActivity : AppCompatActivity() {
             if (Settings.pin == Settings.DEFAULT_PIN) change() else checkPin { change() }
         }
 
+        // Teste de velocidade da internet
+        val speedButton = findViewById<Button>(R.id.speed_test)
+        val speedResult = findViewById<TextView>(R.id.speed_result)
+        speedButton.setOnClickListener { runSpeedTest(speedButton, speedResult) }
+
         // Cache
         cacheInfo = findViewById(R.id.cache_info)
         updateCacheInfo()
@@ -102,6 +112,42 @@ class SettingsActivity : AppCompatActivity() {
             null
         }
         findViewById<TextView>(R.id.about).text = "${getString(R.string.app_name)} · versão ${version ?: "-"}"
+    }
+
+    private fun runSpeedTest(button: Button, result: TextView) {
+        val br = Locale("pt", "BR")
+        button.isEnabled = false
+        button.text = "Testando..."
+        result.text = "Medindo o tempo de resposta..."
+        lifecycleScope.launch {
+            try {
+                val ping = withContext(Dispatchers.IO) { SpeedTest.ping() }
+                result.text = "Ping: $ping ms\nMedindo a velocidade..."
+                val mbps = withContext(Dispatchers.IO) {
+                    SpeedTest.download { partial ->
+                        runOnUiThread {
+                            result.text = String.format(br, "Ping: %d ms\nVelocidade: %.1f Mbps...", ping, partial)
+                        }
+                    }
+                }
+                val server = withContext(Dispatchers.IO) { SpeedTest.serverPing() }
+                val lines = mutableListOf(
+                    String.format(br, "Velocidade: %.1f Mbps", mbps),
+                    "Ping: $ping ms",
+                )
+                if (server != null) lines += "Servidor dos canais respondeu em $server ms"
+                lines += ""
+                lines += SpeedTest.verdict(mbps)
+                result.text = lines.joinToString("\n")
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                result.text = "Não foi possível fazer o teste: ${friendlyError(e)}"
+            } finally {
+                button.isEnabled = true
+                button.text = "Testar de novo"
+            }
+        }
     }
 
     private fun enableParental(box: CheckBox) {
