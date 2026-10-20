@@ -205,6 +205,11 @@ class PlayerActivity : AppCompatActivity() {
         if (gaveUp) return
         handler.removeCallbacks(stallCheck)
         handler.removeCallbacks(retryNow)
+        if (retries >= maxRetries && !triedSwitch && !BuildConfig.PLAY_STORE) {
+            triedSwitch = true
+            switchServerAndRetry()
+            return
+        }
         if (retries >= maxRetries) {
             gaveUp = true
             reconnectBox.text = "Não foi possível reconectar ao canal.\nAperte OK para tentar de novo ou troque de canal."
@@ -218,6 +223,37 @@ class PlayerActivity : AppCompatActivity() {
         reconnectBox.visibility = View.VISIBLE
         // Espera um pouco a mais a cada tentativa (2s, 3s, 4s...) para dar tempo ao servidor
         handler.postDelayed(retryNow, (1_000L + retries * 1_000L))
+    }
+
+    private var triedSwitch = false
+
+    /** O servidor pode ter caído ou sido bloqueado: tenta outro DNS do config.json. */
+    private fun switchServerAndRetry() {
+        val p = player ?: return
+        val oldServer = Repository.account?.server ?: return
+        val index = p.currentMediaItemIndex
+        val position = if (currentItem?.kind == Kind.LIVE) C.TIME_UNSET else p.currentPosition
+        reconnectBox.text = "Trocando de servidor..."
+        reconnectBox.visibility = View.VISIBLE
+        lifecycleScope.launch {
+            val account = withContext(Dispatchers.IO) { runCatching { switchServer(this@PlayerActivity) }.getOrNull() }
+            val current = player ?: return@launch
+            if (account == null || account.server == oldServer) {
+                retries = maxRetries
+                reconnect("sem outro servidor")
+                return@launch
+            }
+            // Mesmos canais/filmes, agora com o endereço do servidor novo
+            items = items.map { it.copy(url = it.url?.replaceFirst(oldServer, account.server)) }
+            PlayerQueue.items = items
+            retries = 0
+            current.stop()
+            current.setMediaItems(items.map { toMediaItem(it) }, index, position)
+            current.prepare()
+            current.play()
+            reconnectBox.text = "Conectado em outro servidor"
+            watchStall()
+        }
     }
 
     private var resumeIndex = 0
@@ -235,6 +271,7 @@ class PlayerActivity : AppCompatActivity() {
     /** Tentar de novo depois de desistir (botão OK). */
     private fun retryAgain() {
         gaveUp = false
+        triedSwitch = false
         retries = 0
         reconnect("manual")
     }

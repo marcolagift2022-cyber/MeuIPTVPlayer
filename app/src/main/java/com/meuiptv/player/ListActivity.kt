@@ -37,6 +37,7 @@ class ListActivity : AppCompatActivity() {
     private var currentCat = -1
     private var loadJob: Job? = null
     private var countJob: Job? = null
+    private var triedSwitch = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -122,6 +123,7 @@ class ListActivity : AppCompatActivity() {
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
+                if (trySwitchServer(e) { loadCategories(keepCategoryId) }) return@launch
                 setLoading(false)
                 showMessage(friendlyError(e))
             }
@@ -224,11 +226,28 @@ class ListActivity : AppCompatActivity() {
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
+                if (trySwitchServer(e) { selectCategory(index) }) return@launch
                 setLoading(false)
                 itemAdapter.items = emptyList()
                 showMessage(friendlyError(e))
             }
         }
+    }
+
+    /**
+     * Erro de conexão: o DNS pode ter caído ou sido bloqueado. Tenta trocar para outro DNS
+     * (uma vez por tela) e, se der certo, repete o que estava fazendo.
+     */
+    private suspend fun trySwitchServer(e: Exception, retry: () -> Unit): Boolean {
+        if (triedSwitch || kind == Kind.FAV || e !is java.io.IOException) return false
+        triedSwitch = true
+        showMessage("Servidor sem resposta. Tentando outro servidor...")
+        val account = withContext(Dispatchers.IO) { runCatching { switchServer(this@ListActivity) }.getOrNull() }
+        if (account == null) return false
+        toast("Conectado em outro servidor")
+        showMessage(null)
+        retry()
+        return true
     }
 
     private fun setItems(list: List<Item>) {

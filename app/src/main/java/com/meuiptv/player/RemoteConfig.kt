@@ -101,3 +101,23 @@ fun loginWithServers(user: String, pass: String, servers: List<String>): LoginRe
         LoginResult(null, networkError ?: "Não foi possível conectar ao servidor.", false)
     }
 }
+
+/**
+ * O DNS que estava em uso parou de responder (queda ou bloqueio da internet do cliente):
+ * tenta os outros DNS do config.json. Se algum aceitar o mesmo usuário e senha, passa a usar ele
+ * e devolve a conta nova. Só para a versão "direto" (DNS na nuvem). Chame fora da thread principal.
+ */
+fun switchServer(context: android.content.Context): Account? {
+    if (BuildConfig.PLAY_STORE) return null
+    val current = Repository.account ?: return null
+    if (!current.isXtream) return null
+    val config = RemoteConfig.load(context)
+    val others = config.dns.filter { it != current.server }
+    if (others.isEmpty()) return null
+    val result = loginWithServers(current.username, current.password, others)
+    val account = result.account ?: return null
+    Prefs(context).saveAccount(account)
+    Settings.expDate = result.expDate
+    Repository.init(account)
+    return account
+}
