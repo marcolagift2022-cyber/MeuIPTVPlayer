@@ -34,6 +34,7 @@ jobs:
         run: |
           cd web
           touch .nojekyll
+          rm -f LEIA-ME-WEB.md  # o guia fica só no projeto, não no site
           # Endereço próprio do site (domínio da Namecheap)
           echo "brutcine.ink" > CNAME
           # Versão no endereço dos arquivos: o navegador sempre baixa a mais nova
