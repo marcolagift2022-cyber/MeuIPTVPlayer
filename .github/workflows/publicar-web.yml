@@ -5,6 +5,10 @@ on:
   push:
     branches: [main]
     paths: ["web/**", ".github/workflows/publicar-web.yml"]
+  # Toda vez que sai um APK novo, o site é publicado de novo com ele (brutcine.ink/app.apk)
+  workflow_run:
+    workflows: ["Gerar APK"]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -12,6 +16,7 @@ permissions:
 
 jobs:
   publicar:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,6 +25,11 @@ jobs:
           for u in $(grep -o 'https://cdn.jsdelivr.net/[^"]*' web/index.html); do
             code=$(curl -s -o /dev/null -w "%{http_code}" "$u"); echo "$code $u"; [ "$code" = "200" ]
           done
+      - name: Colocar o APK mais novo no site
+        run: |
+          curl -fsSL -o web/app.apk "https://github.com/${{ github.repository }}/releases/latest/download/MeuIPTVPlayer.apk"
+          ls -la web/app.apk
+          [ "$(stat -c %s web/app.apk)" -gt 1000000 ]
       - name: Publicar no ramo gh-pages
         run: |
           cd web
