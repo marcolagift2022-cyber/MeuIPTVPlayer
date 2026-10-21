@@ -65,9 +65,19 @@ class XtreamApi(private val account: Account) {
         }
         val extra = if (categoryId == Kind.ALL) "" else "&category_id=${enc(categoryId)}"
         val arr = array(call(action, extra))
-        val out = ArrayList<Item>(arr.length())
-        for (i in 0 until arr.length()) {
-            val o = arr.optJSONObject(i) ?: continue
+        // Filmes e séries: os adicionados mais recentemente aparecem primeiro
+        // (filmes pelo campo "added", séries pelo "last_modified"). Canais ficam na ordem do servidor.
+        val objects = (0 until arr.length()).mapNotNull { arr.optJSONObject(it) }.let { list ->
+            when (kind) {
+                Kind.MOVIE -> list.sortedByDescending { it.str("added").toLongOrNull() ?: 0L }
+                Kind.SERIES -> list.sortedByDescending {
+                    it.str("last_modified").toLongOrNull() ?: it.str("added").toLongOrNull() ?: 0L
+                }
+                else -> list
+            }
+        }
+        val out = ArrayList<Item>(objects.size)
+        for (o in objects) {
             val cat = o.str("category_id")
             out += when (kind) {
                 Kind.LIVE -> {
