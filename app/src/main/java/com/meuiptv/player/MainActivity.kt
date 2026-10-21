@@ -106,11 +106,11 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * Na TV Box o app quase nunca é fechado de verdade. Então, sempre que o menu volta para a tela
-     * (no máximo a cada 10 minutos), baixa o config.json de novo e confere se há versão nova.
+     * (no máximo a cada 3 minutos), baixa o config.json de novo e confere se há versão nova.
      */
     private fun refreshConfigAndCheckUpdate() {
         val now = System.currentTimeMillis()
-        if (now - lastConfigCheck < 10 * 60 * 1000L) return
+        if (now - lastConfigCheck < 3 * 60 * 1000L) return
         lastConfigCheck = now
         lifecycleScope.launch {
             withContext(Dispatchers.IO) { RemoteConfig.load(this@MainActivity) }
@@ -120,7 +120,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         /** Última vez que o config.json foi conferido (vale enquanto o app estiver aberto). */
-        private var lastConfigCheck = System.currentTimeMillis()
+        private var lastConfigCheck = 0L
     }
 
     override fun onStart() {

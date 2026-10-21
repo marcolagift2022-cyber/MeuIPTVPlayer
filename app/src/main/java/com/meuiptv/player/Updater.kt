@@ -26,7 +26,8 @@ object Updater {
 
     /** APK baixado esperando a permissão de "instalar apps desconhecidos". */
     private var pendingFile: File? = null
-    private var dialogShowing = false
+    /** Aviso aberto agora (se a tela foi fechada sem fechar o aviso, ele não conta mais). */
+    private var dialog: AlertDialog? = null
 
     fun installedVersion(activity: AppCompatActivity): Long = try {
         PackageInfoCompat.getLongVersionCode(activity.packageManager.getPackageInfo(activity.packageName, 0))
@@ -36,7 +37,7 @@ object Updater {
 
     /** Mostra o aviso se houver versão nova. Chame no menu principal. */
     fun checkAndPrompt(activity: AppCompatActivity) {
-        if (dialogShowing) return
+        if (dialog?.isShowing == true) return
         val config = RemoteConfig.cached(activity) ?: return
         if (config.latestVersion <= installedVersion(activity)) return
 
@@ -48,17 +49,16 @@ object Updater {
                 }
             )
             .setPositiveButton("Atualizar agora") { _, _ ->
-                dialogShowing = false
+                dialog = null
                 download(activity, config)
             }
-            .setOnDismissListener { dialogShowing = false }
+            .setOnDismissListener { dialog = null }
         if (config.updateRequired) {
             builder.setCancelable(false) // atualização obrigatória: sem "Depois"
         } else {
             builder.setNegativeButton("Depois", null)
         }
-        dialogShowing = true
-        builder.show()
+        dialog = builder.show()
     }
 
     /** Volta do ajuste de permissão: se já pode instalar, continua a instalação. */
