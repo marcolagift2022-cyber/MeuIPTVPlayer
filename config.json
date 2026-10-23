@@ -5,7 +5,7 @@
   ],
   "aviso": "",
   "user_agent": "",
-  "versao": 35,
+  "versao": 36,
   "atualizacao_obrigatoria": false,
-  "mensagem_atualizacao": "Novidades: filmes e séries agora aparecem dos mais novos para os mais antigos, e o app troca sozinho de servidor se o atual cair."
+  "mensagem_atualizacao": "Novidade: agora filmes e episódios continuam de onde você parou. Ao abrir de novo, o app pergunta se quer continuar ou começar do início."
 }
