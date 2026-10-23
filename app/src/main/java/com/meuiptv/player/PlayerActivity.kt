@@ -144,6 +144,53 @@ class PlayerActivity : AppCompatActivity() {
         reconnectBox.visibility = View.GONE
         updateControls()
         showInfo()
+        // Abrindo agora (não é volta de outra tela): pergunta se quer continuar de onde parou
+        if (startPosition <= 0L) askResume()
+        handler.postDelayed(saveProgress, 10_000)
+    }
+
+    // ------------------------------------------------------------ continuar de onde parou
+
+    private var resumeDialog: androidx.appcompat.app.AlertDialog? = null
+
+    /** Salva a posição do filme/episódio a cada 10 segundos. */
+    private val saveProgress = object : Runnable {
+        override fun run() {
+            saveResumePosition()
+            handler.postDelayed(this, 10_000)
+        }
+    }
+
+    private fun saveResumePosition() {
+        val p = player ?: return
+        val item = currentItem ?: return
+        if (item.kind == Kind.LIVE) return
+        val duration = if (p.duration == C.TIME_UNSET) 0L else p.duration
+        ResumeStore.save(this, item.key, p.currentPosition, duration)
+    }
+
+    /** Se o cliente já tinha assistido parte deste filme/episódio, pergunta se quer continuar. */
+    private fun askResume() {
+        val p = player ?: return
+        val item = currentItem ?: return
+        if (item.kind == Kind.LIVE) return
+        val saved = ResumeStore.get(this, item.key)
+        if (saved < ResumeStore.MIN_POSITION_MS) return
+        resumeDialog?.dismiss()
+        p.pause()
+        resumeDialog = androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Continuar assistindo?")
+            .setMessage("Você parou em ${ResumeStore.format(saved)}.")
+            .setPositiveButton("Continuar de onde parei") { _, _ ->
+                player?.let { it.seekTo(saved); it.play() }
+            }
+            .setNegativeButton("Começar do início") { _, _ ->
+                ResumeStore.clear(this, item.key)
+                player?.let { it.seekTo(0); it.play() }
+            }
+            .setOnCancelListener { player?.let { it.seekTo(saved); it.play() } }
+            .show()
+        resumeDialog?.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE)?.requestFocus()
     }
 
     /**
@@ -165,6 +212,9 @@ class PlayerActivity : AppCompatActivity() {
         handler.removeCallbacksAndMessages(null)
         reconnectBox.visibility = View.GONE
         epgJob?.cancel()
+        saveResumePosition()
+        resumeDialog?.dismiss()
+        resumeDialog = null
         player?.let {
             startIndex = it.currentMediaItemIndex
             startPosition = it.currentPosition
@@ -300,6 +350,7 @@ class PlayerActivity : AppCompatActivity() {
             connectionOk()
             updateControls()
             showInfo()
+            if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) askResume()
         }
 
         override fun onPlaybackStateChanged(playbackState: Int) {
@@ -308,7 +359,10 @@ class PlayerActivity : AppCompatActivity() {
                 Player.STATE_READY -> if (player?.playWhenReady == true) connectionOk()
                 Player.STATE_BUFFERING -> watchStall()
                 // Canal ao vivo não "acaba": se acabou, a transmissão caiu
-                Player.STATE_ENDED -> if (live) reconnect("a transmissão parou") else handleVodEnd()
+                Player.STATE_ENDED -> if (live) reconnect("a transmissão parou") else {
+                    currentItem?.let { ResumeStore.clear(this@PlayerActivity, it.key) }
+                    handleVodEnd()
+                }
                 Player.STATE_IDLE -> {}
             }
         }
