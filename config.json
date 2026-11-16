@@ -5,7 +5,7 @@
   ],
   "aviso": "",
   "user_agent": "",
-  "versao": 36,
+  "versao": 37,
   "atualizacao_obrigatoria": false,
-  "mensagem_atualizacao": "Novidade: agora filmes e episódios continuam de onde você parou. Ao abrir de novo, o app pergunta se quer continuar ou começar do início."
+  "mensagem_atualizacao": "Novidade: ao tocar num filme ou série, agora aparece a sinopse, a nota e o ano antes de assistir. Nas séries, escolha a temporada e o episódio."
 }
