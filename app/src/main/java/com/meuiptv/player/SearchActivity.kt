@@ -169,6 +169,8 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun open(item: Item, position: Int) {
+        // Filme ou série: primeiro a tela com a sinopse e o botão "Assistir"
+        if (DetailsActivity.openIfSupported(this, item)) return
         if (item.url == null) {
             startActivity(
                 Intent(this, EpisodesActivity::class.java)

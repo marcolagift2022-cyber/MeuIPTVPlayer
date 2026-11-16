@@ -4,4 +4,6 @@
     <dimen name="form_side_padding">180dp</dimen>
     <dimen name="menu_button_height">150dp</dimen>
     <dimen name="category_column_width">300dp</dimen>
+    <dimen name="details_poster_width">170dp</dimen>
+    <dimen name="details_poster_height">255dp</dimen>
 </resources>

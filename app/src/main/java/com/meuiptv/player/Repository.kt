@@ -83,6 +83,17 @@ object Repository {
 
     fun episodes(seriesId: String): List<Item> = XtreamApi(acc()).episodes(seriesId)
 
+    /** Tela de detalhes só existe no Xtream (a lista M3U não traz sinopse). */
+    fun hasDetails(item: Item): Boolean {
+        if (account?.isXtream != true) return false
+        return item.kind == Kind.SERIES && item.url == null ||
+            item.kind == Kind.MOVIE && item.url?.contains("/movie/") == true
+    }
+
+    fun movieDetails(item: Item): Details = XtreamApi(acc()).movieDetails(item)
+
+    fun seriesDetails(item: Item): Pair<Details, List<Item>> = XtreamApi(acc()).seriesDetails(item)
+
     /** EPG curto (só funciona com Xtream e canais ao vivo). */
     fun nowNext(item: Item): String {
         val a = acc()

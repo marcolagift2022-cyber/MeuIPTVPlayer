@@ -36,6 +36,7 @@
             android:name=".ListActivity"
             android:windowSoftInputMode="stateHidden" />
         <activity android:name=".EpisodesActivity" />
+        <activity android:name=".DetailsActivity" />
         <activity
             android:name=".SearchActivity"
             android:windowSoftInputMode="adjustResize" />

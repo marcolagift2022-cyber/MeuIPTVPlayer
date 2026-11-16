@@ -64,3 +64,20 @@ data class Item(
         )
     }
 }
+
+/** Informações da tela de detalhes de um filme ou série. */
+data class Details(
+    val title: String,
+    val poster: String?,
+    val backdrop: String?,
+    val plot: String,
+    val genre: String,
+    val year: String?,
+    val duration: String,
+    /** Nota de 0 a 10 (null = sem nota). */
+    val rating: Double?,
+    /** Quando foi adicionado no servidor (segundos). */
+    val added: Long?,
+    val cast: String,
+    val director: String,
+)

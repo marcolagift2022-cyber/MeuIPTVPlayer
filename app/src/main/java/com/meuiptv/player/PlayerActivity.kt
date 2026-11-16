@@ -35,6 +35,9 @@ import kotlinx.coroutines.withContext
 object PlayerQueue {
     var items: List<Item> = emptyList()
     var index: Int = 0
+
+    /** O cliente já escolheu "Continuar" na tela de detalhes: volta de onde parou sem perguntar. */
+    var autoResume: Boolean = false
 }
 
 @OptIn(UnstableApi::class)
@@ -175,7 +178,13 @@ class PlayerActivity : AppCompatActivity() {
         val item = currentItem ?: return
         if (item.kind == Kind.LIVE) return
         val saved = ResumeStore.get(this, item.key)
+        val auto = PlayerQueue.autoResume
+        PlayerQueue.autoResume = false
         if (saved < ResumeStore.MIN_POSITION_MS) return
+        if (auto) {
+            p.seekTo(saved)
+            return
+        }
         resumeDialog?.dismiss()
         p.pause()
         resumeDialog = androidx.appcompat.app.AlertDialog.Builder(this)

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Escurece a arte de fundo da tela de detalhes, mais forte embaixo, onde fica o texto -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:angle="270"
+        android:centerColor="#B30A0F0B"
+        android:endColor="#F20A0F0B"
+        android:startColor="#660A0F0B" />
+</shape>

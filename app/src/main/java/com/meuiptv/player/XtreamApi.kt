@@ -96,8 +96,61 @@ class XtreamApi(private val account: Account) {
     }
 
     /** Lista todos os episódios de uma série, em ordem de temporada. */
-    fun episodes(seriesId: String): List<Item> {
-        val o = JSONObject(call("get_series_info", "&series_id=${enc(seriesId)}"))
+    fun episodes(seriesId: String): List<Item> =
+        parseEpisodes(JSONObject(call("get_series_info", "&series_id=${enc(seriesId)}")))
+
+    /** Sinopse, nota, ano, gênero e imagens de um filme (tela de detalhes). */
+    fun movieDetails(item: Item): Details {
+        val o = try {
+            JSONObject(call("get_vod_info", "&vod_id=${enc(item.id)}"))
+        } catch (e: JSONException) {
+            JSONObject()
+        }
+        val info = o.optJSONObject("info") ?: JSONObject()
+        val data = o.optJSONObject("movie_data") ?: JSONObject()
+        return details(info, item, data.str("added").toLongOrNull())
+    }
+
+    /** Detalhes da série e todos os episódios, numa chamada só. */
+    fun seriesDetails(item: Item): Pair<Details, List<Item>> {
+        val o = JSONObject(call("get_series_info", "&series_id=${enc(item.id)}"))
+        val info = o.optJSONObject("info") ?: JSONObject()
+        val added = info.str("last_modified").toLongOrNull()
+        return details(info, item, added) to parseEpisodes(o)
+    }
+
+    private fun details(info: JSONObject, item: Item, added: Long?): Details {
+        val backdrop = when (val b = info.opt("backdrop_path")) {
+            is JSONArray -> (0 until b.length()).map { b.optString(it) }.firstOrNull { it.startsWith("http") }
+            is String -> b.takeIf { it.startsWith("http") }
+            else -> null
+        }
+        val poster = listOf("movie_image", "cover_big", "cover").map { info.str(it) }
+            .firstOrNull { it.startsWith("http") } ?: item.icon
+        val date = listOf("releasedate", "release_date", "releaseDate").map { info.str(it) }.firstOrNull { it.isNotBlank() }
+        val year = date?.let { Regex("(19|20)\\d{2}").find(it)?.value }
+            ?: Regex("\\((19|20)\\d{2}\\)").find(item.name)?.value?.trim('(', ')')
+        val rating = info.str("rating").replace(',', '.').toDoubleOrNull()
+            ?: info.str("rating_5based").toDoubleOrNull()?.times(2)
+        val duration = info.str("duration").ifBlank {
+            info.str("episode_run_time").takeIf { it.isNotBlank() && it != "0" }?.let { "$it min" } ?: ""
+        }
+        return Details(
+            title = info.str("name").ifBlank { item.name },
+            poster = poster,
+            backdrop = backdrop ?: poster,
+            plot = info.str("plot").ifBlank { info.str("description") },
+            genre = info.str("genre"),
+            year = year,
+            duration = duration,
+            rating = rating?.takeIf { it > 0 },
+            added = added?.takeIf { it > 0 },
+            cast = info.str("cast").ifBlank { info.str("actors") },
+            director = info.str("director"),
+        )
+    }
+
+    private fun parseEpisodes(o: JSONObject): List<Item> {
         val seasons = ArrayList<Pair<String, JSONArray>>()
         when (val eps = o.opt("episodes")) {
             is JSONObject -> eps.keys().forEach { k -> eps.optJSONArray(k)?.let { seasons += k to it } }
